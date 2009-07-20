@@ -1,4 +1,18 @@
-// Copyright 2009 Google Inc. All Rights Reserved.
+/* Copyright (c) 2009 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.wave.api.impl;
 
 import com.google.wave.api.Blip;
@@ -10,10 +24,10 @@ import java.util.List;
 
 /**
  * The implementation of a Blip. A Blip is the object representation used to
- * wrap the underlying BlipData object passed during serialization. It
+ * wrap the underlying {@link BlipData} object passed during serialization. It
  * provides navigation through the wavelet/blip hierarchy as well as
- * convenience methods for manipulating a Blip. The message bundle is used
- * to refer to other wavelet and blip data that was sent with the events.
+ * convenience methods for manipulating a {@link Blip}. The message bundle is
+ * used to refer to other wavelet and blip data that was sent with the events.
  * 
  * @author scovitz@google.com (Seth Covitz)
  */

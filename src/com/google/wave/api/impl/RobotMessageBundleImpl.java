@@ -1,4 +1,18 @@
-// Copyright 2009 Google Inc. All Rights Reserved.
+/* Copyright (c) 2009 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.google.wave.api.impl;
 
 import com.google.wave.api.Blip;
@@ -13,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * RobotMessageBundle implementation.
+ * {@link RobotMessageBundle} implementation.
  * 
  * @author scovitz@google.com (Seth Covitz)
  */
@@ -98,7 +112,11 @@ public class RobotMessageBundleImpl implements RobotMessageBundle {
   @Override
   public Wavelet getWavelet() {
     if (wavelet == null) {
-      wavelet = new WaveletImpl(eventMessageBundle.getWaveletData(), this);
+      WaveletData waveletData = eventMessageBundle.getWaveletData();
+      if (waveletData == null) {
+        waveletData = new WaveletData();
+      }
+      wavelet = new WaveletImpl(waveletData, this);
     }
     return wavelet;
   }
@@ -138,22 +156,9 @@ public class RobotMessageBundleImpl implements RobotMessageBundle {
   }
 
   @Override
+  @Deprecated
   public Wavelet createWavelet(List<String> participants, String annotationWriteBack) {
-    WaveletData waveletData = new WaveletData();
-    waveletData.setWaveId("TBD" + Math.random());
-    waveletData.setWaveletId("conv+root");
-    waveletData.setParticipants(participants);
-    BlipData blipData = new BlipData();
-    blipData.setBlipId("TBD" + Math.random());
-    blipData.setWaveId(waveletData.getWaveId());
-    blipData.setWaveletId(waveletData.getWaveletId());
-    eventMessageBundle.getBlipData().put(blipData.getBlipId(), blipData);
-    waveletData.setRootBlipId(blipData.getBlipId());
-    
-    addOperation(new OperationImpl(OperationType.WAVELET_CREATE, getWavelet().getWaveId(),
-        getWavelet().getWaveletId(), annotationWriteBack, -1, waveletData));
-    
-    return new WaveletImpl(waveletData, this);
+    return getWavelet().createWavelet(participants, annotationWriteBack);
   }
 
   @Override
@@ -162,7 +167,8 @@ public class RobotMessageBundleImpl implements RobotMessageBundle {
     Wavelet result = wavelets.get(key);
     if (result == null) {
       Wavelet wavelet = getWavelet();
-      if (waveId.equals(wavelet.getWaveId()) && waveletId.equals(wavelet.getWaveletId())) {
+      if (wavelet != null && waveId.equals(wavelet.getWaveId()) &&
+          waveletId.equals(wavelet.getWaveletId())) {
         result = wavelet;
       } else {
         WaveletData waveletData = new WaveletData();
