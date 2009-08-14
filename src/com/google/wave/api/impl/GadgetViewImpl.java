@@ -80,12 +80,15 @@ public class GadgetViewImpl implements GadgetView {
 
   @Override
   public void insertAfter(Gadget after, Gadget gadget) {
-    textView.insertElement(textView.getPosition(after) + 2, gadget);
+    textView.insertElement(textView.getPosition(after) + 1, gadget);
   }
 
   @Override
   public void insertAfter(String url, Gadget gadget) {
-    textView.insertElement(textView.getPosition(getGadget(url)) + 2, gadget);
+    Gadget after = getGadget(url);
+    if (after != null) {
+      insertAfter(after, gadget);
+    }
   }
 
   @Override

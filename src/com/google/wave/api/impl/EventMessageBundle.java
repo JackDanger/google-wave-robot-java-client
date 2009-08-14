@@ -16,6 +16,7 @@
 package com.google.wave.api.impl;
 
 import com.google.wave.api.Context;
+import com.google.wave.api.EventType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,5 +126,17 @@ public class EventMessageBundle {
    */
   public void addBlip(String id, BlipData blip) {
     blipData.put(id, blip);
+  }
+
+  /**
+   * Return whether the lookingFor event is contained in this bundle.
+   */
+  public boolean hasEvent(EventType lookingFor) {
+    for (EventData event : events) {
+      if (event.getType().equals(lookingFor)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
