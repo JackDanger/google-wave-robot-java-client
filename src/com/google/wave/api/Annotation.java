@@ -166,4 +166,23 @@ public class Annotation {
 
     return name.equals(other.name) && range.equals(other.range) && value.equals(other.value);
   }
+  
+  @Override
+  public String toString() {
+    StringBuilder res = new StringBuilder("Annotation(");
+    if (name != null) {
+      res.append(name);
+      res.append(',');
+    }
+    if (value != null) {
+      res.append(value);
+      res.append(',');
+    }
+    if (range != null) {
+      res.append(range.toString());
+    }
+    res.append(')');
+    return res.toString();
+  }
+
 }

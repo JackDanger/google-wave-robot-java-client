@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * The data representation of Wavelet metadata used to serialize and send to
  * the Robot.
- * 
+ *
  * @author scovitz@google.com (Seth Covitz)
  */
 public class WaveletData {
@@ -51,7 +51,7 @@ public class WaveletData {
     waveletId = null;
     dataDocuments = new HashMap<String, String>();
   }
-  
+
   public WaveletData(WaveletData wavelet) {
     this.creationTime = wavelet.getCreationTime();
     this.creator = wavelet.getCreator();
@@ -84,7 +84,7 @@ public class WaveletData {
   public String getRootBlipId() {
     return rootBlipId;
   }
-  
+
   public String getTitle() {
     return title;
   }
@@ -96,7 +96,7 @@ public class WaveletData {
   public String getWaveId() {
     return waveId;
   }
-  
+
   public String getWaveletId() {
     return waveletId;
   }
@@ -120,7 +120,7 @@ public class WaveletData {
   public void setRootBlipId(String rootBlipId) {
     this.rootBlipId = rootBlipId;
   }
-  
+
   public void setTitle(String title) {
     this.title = title;
   }
@@ -128,7 +128,7 @@ public class WaveletData {
   public void setVersion(long version) {
     this.version = version;
   }
-  
+
   public void setWaveId(String waveId) {
     this.waveId = waveId;
   }
@@ -148,12 +148,16 @@ public class WaveletData {
   public void setDataDocument(String name, String data) {
     dataDocuments.put(name, data);
   }
-  
+
   public String getDataDocument(String name) {
     if (dataDocuments == null) {
       return null;
     } else {
       return dataDocuments.get(name);
     }
+  }
+
+  public void addParticipant(String participant) {
+    participants.add(participant);
   }
 }

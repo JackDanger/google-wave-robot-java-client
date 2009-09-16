@@ -15,53 +15,96 @@
 
 package com.google.wave.api.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 /**
  * The Operation types supported by Robots.
- * 
+ *
  * @author scovitz@google.com (Seth Covitz)
  * @author mprasetya@google.com (Marcel Prasetya)
  */
 public enum OperationType {
-  WAVELET_APPEND_BLIP("WAVELET_APPEND_BLIP"),
-  WAVELET_ADD_PARTICIPANT("WAVELET_ADD_PARTICIPANT"),
-  WAVELET_REMOVE_PARTICIPANT("WAVELET_REMOVE_PARTICIPANT"),
-  WAVELET_CREATE("WAVELET_CREATE"),
-  WAVELET_DATADOC_APPEND("WAVELET_DATADOC_APPEND"),
-  WAVELET_DATADOC_SET("WAVELET_DATADOC_SET"),
-  WAVELET_REMOVE_SELF("WAVELET_REMOVE_SELF"),
-  WAVELET_SET_TITLE("WAVELET_SET_TITLE"),
-  BLIP_CREATE_CHILD("BLIP_CREATE_CHILD"),
-  BLIP_DELETE("BLIP_DELETE"),
-  BLIP_SET_AUTHOR("BLIP_SET_AUTHOR"),
-  BLIP_SET_CREATION_TIME("BLIP_SET_CREATION_TIME"),
-  DOCUMENT_ANNOTATION_DELETE("DOCUMENT_ANNOTATION_DELETE"),
-  DOCUMENT_ANNOTATION_SET("DOCUMENT_ANNOTATION_SET"),
-  DOCUMENT_ANNOTATION_SET_NORANGE("DOCUMENT_ANNOTATION_SET_NORANGE"),
-  DOCUMENT_APPEND("DOCUMENT_APPEND"),
-  DOCUMENT_APPEND_MARKUP("DOCUMENT_APPEND_MARKUP"),
-  DOCUMENT_APPEND_STYLED_TEXT("DOCUMENT_APPEND_STYLED_TEXT"),
-  DOCUMENT_INSERT("DOCUMENT_INSERT"),
-  DOCUMENT_DELETE("DOCUMENT_DELETE"),
-  DOCUMENT_REPLACE("DOCUMENT_REPLACE"),
-  DOCUMENT_ELEMENT_APPEND("DOCUMENT_ELEMENT_APPEND"),
-  DOCUMENT_ELEMENT_DELETE("DOCUMENT_ELEMENT_DELETE"),
-  DOCUMENT_ELEMENT_INSERT("DOCUMENT_ELEMENT_INSERT"),
-  DOCUMENT_ELEMENT_INSERT_AFTER("DOCUMENT_ELEMENT_INSERT_AFTER"),
-  DOCUMENT_ELEMENT_INSERT_BEFORE("DOCUMENT_ELEMENT_INSERT_BEFORE"),
-  DOCUMENT_ELEMENT_REPLACE("DOCUMENT_ELEMENT_REPLACE"),
-  DOCUMENT_INLINE_BLIP_APPEND("DOCUMENT_INLINE_BLIP_APPEND"),
-  DOCUMENT_INLINE_BLIP_DELETE("DOCUMENT_INLINE_BLIP_DELETE"),
-  DOCUMENT_INLINE_BLIP_INSERT("DOCUMENT_INLINE_BLIP_INSERT"),
-  DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT("DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT");
-  
-  private final String text;
-  
-  private OperationType(String text) {
-    this.text = text;
+  WAVELET_APPEND_BLIP("wavelet.appendBlip"),
+  WAVELET_CREATE("wavelet.create"),
+  WAVELET_REMOVE_SELF("wavelet.removeSelf"),
+  WAVELET_SET_TITLE("wavelet.setTitle"),
+
+  WAVELET_ADD_PARTICIPANT("wavelet.participant.add"),
+  WAVELET_REMOVE_PARTICIPANT("wavelet.participant.remove"),
+
+  WAVELET_DATADOC_APPEND("wavelet.datadoc.append"),
+  WAVELET_DATADOC_SET("wavelet.datadoc.set"),
+
+  BLIP_CREATE_CHILD("blip.createChild"),
+  BLIP_DELETE("blip.delete"),
+  BLIP_SET_AUTHOR("blip.setAuthor"),
+  BLIP_SET_CREATION_TIME("blip.setCreationTime"),
+
+  DOCUMENT_ANNOTATION_DELETE("document.annotation.delete"),
+  DOCUMENT_ANNOTATION_SET("document.annotation.set"),
+  DOCUMENT_ANNOTATION_SET_NORANGE("document.annotation.setNoRange"),
+
+  DOCUMENT_APPEND("document.append"),
+  DOCUMENT_APPEND_MARKUP("document.appendMarkup"),
+  DOCUMENT_APPEND_STYLED_TEXT("document.appendStyledText"),
+  DOCUMENT_INSERT("document.insert"),
+  DOCUMENT_DELETE("document.delete"),
+  DOCUMENT_REPLACE("document.replace"),
+
+  DOCUMENT_ELEMENT_APPEND("document.element.append"),
+  DOCUMENT_ELEMENT_DELETE("document.element.delete"),
+  DOCUMENT_ELEMENT_INSERT("document.element.insert"),
+  DOCUMENT_ELEMENT_INSERT_AFTER("document.element.insertAfter"),
+  DOCUMENT_ELEMENT_INSERT_BEFORE("document.element.insertBefore"),
+  DOCUMENT_ELEMENT_MODIFY_ATTRS("document.element.modifyAttrs"),
+  DOCUMENT_ELEMENT_REPLACE("document.element.replace"),
+
+  DOCUMENT_INLINE_BLIP_APPEND("document.inlineBlip.append"),
+  DOCUMENT_INLINE_BLIP_DELETE("document.inlineBlip.delete"),
+  DOCUMENT_INLINE_BLIP_INSERT("document.inlineBlip.insert"),
+  DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT("document.inlineBlip.insertAfterElement"),
+
+  ROBOT_NOTIFY_CAPABILITIES_HASH("robot.notifyCapabilitiesHash");
+
+  private static final Logger LOG = Logger.getLogger(OperationType.class.getName());
+
+  private static final Map<String, OperationType> reverseLookupMap =
+      new HashMap<String, OperationType>();
+
+  static {
+    for (OperationType operationType : OperationType.values()) {
+      if (reverseLookupMap.containsKey(operationType.method)) {
+        LOG.warning("Operation with method name " + operationType.method + " already exist.");
+      }
+      reverseLookupMap.put(operationType.method, operationType);
+    }
   }
-  
-  @Override
-  public String toString() {
-    return text;
+
+  private final String method;
+
+  private OperationType(String method) {
+    this.method = method;
+  }
+
+  /**
+   * Returns the method name of an operation type.
+   *
+   * @return The method name of an operation type.
+   */
+  public String method() {
+    return method;
+  }
+
+  /**
+   * Returns an {@link OperationType} enumeration that has the given method
+   * name.
+   *
+   * @param methodName The method name of an operation.
+   * @return An {@link OperationType} that has the given method name.
+   */
+  public static OperationType fromMethodName(String methodName) {
+    return reverseLookupMap.get(methodName);
   }
 }

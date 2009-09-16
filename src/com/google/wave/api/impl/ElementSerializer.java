@@ -34,7 +34,7 @@ import java.util.Map;
 
 /**
  * {@link Element} serialization/deserialization.
- * 
+ *
  * @author scovitz@google.com (Seth Covitz)
  */
 @SuppressWarnings("unchecked")
@@ -59,7 +59,7 @@ public class ElementSerializer extends AbstractSerializer {
     if (!(o instanceof Element)) {
       throw new MarshallException("Object is not of type Element.");
     }
-    
+
     JSONObject json = new JSONObject();
     Element element = (Element) o;
     try {
@@ -69,7 +69,7 @@ public class ElementSerializer extends AbstractSerializer {
     } catch (JSONException jsonx) {
       throw new MarshallException("Cannot marshall Element.");
     }
-    
+
     return json;
   }
 
@@ -84,16 +84,16 @@ public class ElementSerializer extends AbstractSerializer {
     if (!Element.class.isAssignableFrom(clazz)) {
       throw new UnmarshallException(clazz.getName() + " is not assignable from Element");
     }
-    
+
     JSONObject jsonObject = (JSONObject) json;
     Element element = null;
     try {
       String javaname = jsonObject.isNull("name") ? "" : jsonObject.getString("name");
       element = (Element) clazz.newInstance();
       element.setType(ElementType.valueOf(jsonObject.getString("type")));
-      element.setProperties((Map<String, Object>) ser.unmarshall(state, Map.class,
+      element.setProperties((Map<String, String>) ser.unmarshall(state, Map.class,
           jsonObject.getJSONObject("properties")));
- 
+
     } catch (InstantiationException e) {
       e.printStackTrace();
     } catch (IllegalAccessException e) {
@@ -101,7 +101,7 @@ public class ElementSerializer extends AbstractSerializer {
     } catch (JSONException jsonx) {
       jsonx.printStackTrace();
     }
-    
+
     return element;
   }
 }

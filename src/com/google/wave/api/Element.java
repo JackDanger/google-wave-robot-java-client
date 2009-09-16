@@ -22,8 +22,8 @@ import java.util.Map;
  * Elements are non-text content within a document. What the represent is
  * generally abstracted from the Robot. Although a Robot can query the
  * properties of an element it can only interact with the specific types that
- * the element represents.  
- * 
+ * the element represents.
+ *
  * @author scovitz@google.com (Seth Covitz)
  * @author mprasetya@google.com (Marcel Prasetya)
  */
@@ -33,101 +33,118 @@ public class Element {
    * The type of an element.
    */
   private ElementType type;
-  
+
   /**
    * A map of properties representing details of the element.
    */
-  private Map<String, Object> properties;
+  private Map<String, String> properties;
 
   /**
    * Constructs an empty Element.
    */
   public Element() {
     this.type = null;
-    this.properties = new HashMap<String, Object>();
+    this.properties = new HashMap<String, String>();
   }
-  
+
   /**
    * Creates a copy of an element.
-   * 
+   *
    * @param element the element to copy.
    */
   public Element(Element element) {
     this.type = element.getType();
-    this.properties = new HashMap<String, Object>(element.getProperties());
+    this.properties = new HashMap<String, String>(element.getProperties());
   }
 
   /**
    * Returns the type of the element.
-   * 
+   *
    * @return the type of the element.
    */
   public ElementType getType() {
     return type;
   }
-  
+
   /**
    * Returns the map of properties for this element.
-   * 
+   *
    * @return the map of properties for this element.
    */
-  public Map<String, Object> getProperties() {
+  public Map<String, String> getProperties() {
     return properties;
   }
-  
+
   /**
    * Constructs an Element of the given type.
-   * 
+   *
    * @param type the type of elment to construct.
    */
   public Element(ElementType type) {
     this.type = type;
-    this.properties = new HashMap<String, Object>();
+    this.properties = new HashMap<String, String>();
   }
-  
+
   /**
    * Constructs an Element of the given type with an initial set of properties.
-   * 
+   *
    * @param type the type of the element.
    * @param properties the properties of the element.
    */
-  public Element(ElementType type, Map<String, Object> properties) {
+  public Element(ElementType type, Map<String, String> properties) {
     this.type = type;
     this.properties = properties;
   }
-  
+
   /**
    * Replaces the properties of this element with a new set of properties.
-   * 
+   *
    * @param properties the properties to be set on this element.
    */
-  public void setProperties(Map<String, Object> properties) {
+  public void setProperties(Map<String, String> properties) {
     this.properties = properties;
   }
-  
+
   /**
    * Creates/replaces a property with the given to a new value.
-   * 
+   *
    * @param name the name of the property to create/replace.
    * @param value the value to be set on this property.
    */
   public void setProperty(String name, String value) {
     this.properties.put(name, value);
   }
-  
+
   /**
    * Returns the named property of this element.
-   * 
+   *
    * @param name the name of the property.
    * @return the value of the property or null if the property was not found.
    */
-  public Object getProperty(String name) {
-    return this.properties.get(name);
+  public String getProperty(String name) {
+    return getProperty(name, null);
   }
-  
+
+  /**
+   * Returns the named property of this element, or the default value if the
+   * property was not found.
+   *
+   * @param name the name of the property.
+   * @param defaultValue the default value of the property.
+   * @return the value of the property or the default value if the property was
+   *     not found.
+   */
+  public String getProperty(String name, String defaultValue) {
+    String property = this.properties.get(name);
+    if (property != null) {
+      return property;
+    }
+    return defaultValue;
+  }
+
   /**
    * Sets the type of this Element.
-   * 
+   *
    * @param type the type of the element.
    */
   public void setType(ElementType type) {
@@ -136,7 +153,7 @@ public class Element {
 
   /**
    * Returns whether this element is a form element.
-   * 
+   *
    * @return true if the element is a form element, false otherwise.
    */
   public boolean isFormElement() {
@@ -150,31 +167,36 @@ public class Element {
         type == ElementType.RADIO_BUTTON_GROUP ||
         type == ElementType.TEXTAREA;
   }
-  
+
   /**
    * Returns whether this element is a gadget.
-   * 
+   *
    * @return true if the element is a gadget, false otherwise.
    */
   public boolean isGadget() {
     return type == ElementType.GADGET;
   }
-  
+
   /**
    * Returns whether this element is an inline blip.
-   * 
+   *
    * @return true if the element is an inline blip, false otherwise.
    */
   public boolean isInlineBlip() {
     return type == ElementType.INLINE_BLIP;
   }
-  
+
   /**
    * Returns whether this element is an image.
-   * 
+   *
    * @return true if the element is an image, false otherwise.
    */
   public boolean isImage() {
     return type == ElementType.IMAGE;
+  }
+
+  @Override
+  public String toString() {
+    return "{'type':'" + type + "','properties':" + properties + "}";
   }
 }

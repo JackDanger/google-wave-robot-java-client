@@ -47,13 +47,8 @@ public class Range {
    * @param end End of the range.
    */
   public Range(int start, int end) {
-    // TODO(scovitz): Figure out why Spelly generates zero length range here.
-//    if (end - start <= 0) {
-//      throw new RuntimeException("Range length cannot be zero or negative.");
-//    } else {
-      this.start = start;
-      this.end = end;
-//    }
+    this.start = start;
+    this.end = end;
   }
 
   /**
@@ -117,5 +112,10 @@ public class Range {
     
     Range other = (Range) obj;
     return start == other.start && end == other.end;
+  }
+  
+  @Override
+  public String toString() {
+    return "Range(" + start + ',' + end + ')';
   }
 }

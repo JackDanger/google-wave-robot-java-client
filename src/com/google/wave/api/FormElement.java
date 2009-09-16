@@ -18,56 +18,56 @@ package com.google.wave.api;
 /**
  * Form Elements allow users and robots to build forms for other users to
  * interact with. For each element you can specify its type, name, a default
- * value and a label. The current value of the element is stored with in.  
- * 
+ * value and a label. The current value of the element is stored with in.
+ *
  * @author scovitz@google.com (Seth Covitz)
  * @author mprasetya@google.com (Marcel Prasetya)
  */
 public class FormElement extends Element {
-  
+
   /**
    * Default Constructor
    */
   public FormElement() {
   }
-  
+
   /**
    * Constructs a form element of the given type.
    */
   public FormElement(ElementType type) {
     this(type, "", "", "", "");
   }
-  
+
   /**
    * Constructs a form element given a type and name.
    */
   public FormElement(ElementType type, String name) {
     this(type, "", name, "", "");
   }
-  
+
   /**
    * Constructs a form element given a type, name and default value.
    */
   public FormElement(ElementType type, String name, String defaultValue) {
     this(type, "", name, defaultValue, defaultValue);
   }
-  
+
   /**
    * Constructs a form element given a type, label, name and default value.
    */
   public FormElement(ElementType type, String label, String name, String defaultValue) {
     this(type, label, name, defaultValue, defaultValue);
   }
-  
+
   /**
    * Creates a copy of an existing form element.
    */
   public FormElement(FormElement formElement) {
     this(formElement.getType(),
-        (String) formElement.getProperty("label"),
-        (String) formElement.getProperty("name"),
-        (String) formElement.getProperty("defaultValue"),
-        (String) formElement.getProperty("value"));
+        formElement.getProperty("label"),
+        formElement.getProperty("name"),
+        formElement.getProperty("defaultValue"),
+        formElement.getProperty("value"));
   }
 
   /**
@@ -84,7 +84,7 @@ public class FormElement extends Element {
 
   /**
    * Returns the label for the form element.
-   * 
+   *
    * @return the label for the form element.
    */
   public String getLabel() {
@@ -93,7 +93,7 @@ public class FormElement extends Element {
 
   /**
    * Sets the label text for the form element.
-   * 
+   *
    * @param label the new label for the form element.
    */
   public void setLabel(String label) {
@@ -102,7 +102,7 @@ public class FormElement extends Element {
 
   /**
    * Returns the name of the form element.
-   * 
+   *
    * @return the name of the form element.
    */
   public String getName() {
@@ -110,13 +110,13 @@ public class FormElement extends Element {
   }
 
   private String getPropertyNullCheck(String name) {
-    String property = (String) getProperty(name);
+    String property = getProperty(name);
     return property == null ? "" : property;
   }
 
   /**
    * Sets the name of the form element.
-   * 
+   *
    * @param name the new name of the form element.
    */
   public void setName(String name) {
@@ -125,7 +125,7 @@ public class FormElement extends Element {
 
   /**
    * Returns the default value of the form element.
-   * 
+   *
    * @return the default value.
    */
   public String getDefaultValue() {
@@ -136,7 +136,7 @@ public class FormElement extends Element {
    * Sets the default value of the form element. The default value is used
    * to initialize the form element and to test whether or not it has been
    * modified.
-   * 
+   *
    * @param defaultValue the new default value of the form element.
    */
   public void setDefaultValue(String defaultValue) {
@@ -145,7 +145,7 @@ public class FormElement extends Element {
 
   /**
    * Returns the current value of the form element.
-   * 
+   *
    * @return the current value of the form element.
    */
   public String getValue() {
@@ -154,10 +154,10 @@ public class FormElement extends Element {
 
   /**
    * Sets the value of the form element.
-   * 
+   *
    * @param value the new value of the form element.
    */
   public void setValue(String value) {
     setProperty("value", value);
-  }  
+  }
 }

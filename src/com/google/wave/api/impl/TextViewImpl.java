@@ -48,7 +48,7 @@ public class TextViewImpl implements TextView {
       return matchRange(annotation) && matchContent(annotation);
     }
     
-    public boolean matchRange(Annotation annotation) {
+    public boolean matchRange(@SuppressWarnings("unused") Annotation annotation) {
       return true;
     }
     
@@ -135,7 +135,7 @@ public class TextViewImpl implements TextView {
     int start = range.getStart();
     int end = range.getEnd();
     
-    if (start < 0 || end >= blipData.getContent().length() || start >= end) {
+    if (start < 0 || end > blipData.getContent().length() || start >= end) {
       throw new IndexOutOfBoundsException("Invalid range " + start + " - " + end);
     }
     
@@ -402,22 +402,16 @@ public class TextViewImpl implements TextView {
         length, element));
     
     blipData.addElement(length, element);
-    if (element.getType().equals(ElementType.INPUT)) {
-      blipData.setContent(blipData.getContent().concat(" "));
-      expandOrShiftAnnotations(length - 1, 1);
-    } else {
-      blipData.setContent(blipData.getContent().concat(" \n"));      
-      expandOrShiftAnnotations(length - 1, 2);
-    }
+    blipData.setContent(blipData.getContent().concat(" "));
+    expandOrShiftAnnotations(length - 1, 1);
   }
 
   @Override
   public List<Element> getElements() {
     if (blipData != null && blipData.getElements() != null) {
       return new ArrayList<Element>(blipData.getElements().values());
-    } else {
-      return null;
     }
+    return null;
   }
 
   @Override
