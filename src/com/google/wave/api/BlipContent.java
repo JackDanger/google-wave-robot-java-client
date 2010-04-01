@@ -18,7 +18,6 @@ package com.google.wave.api;
 /**
  * An abstract class that models a blip content.
  *
- * @see Markup
  * @see Element
  * @see Plaintext
  */
@@ -26,8 +25,7 @@ public abstract class BlipContent {
 
   /**
    * Returns the textual representation of of this blip content, for example,
-   * if it's a markup, this method returns the plain text version of the markup,
-   * sans the tags.
+   * if it's an element, it returns a space.
    *
    * @return the textual representation.
    */

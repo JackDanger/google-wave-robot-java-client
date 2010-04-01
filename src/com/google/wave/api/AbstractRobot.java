@@ -142,7 +142,7 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
         // Send the request body.
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", contentType);
-        out = new OutputStreamWriter(conn.getOutputStream());
+        out = new OutputStreamWriter(conn.getOutputStream(), UTF_8);
         out.write(body);
         out.flush();
 
@@ -224,7 +224,7 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
   public static final String XML_MIME_TYPE = "application/xml";
 
   /** Some constants for encoding. */
-  public static final String UTF_8 = "utf-8";
+  public static final String UTF_8 = "UTF-8";
   public static final String SHA_1 = "SHA-1";
   public static final String OAUTH_BODY_HASH = "oauth_body_hash";
   public static final String OAUTH_CONSUMER_KEY_DOMAIN = "google.com";
@@ -1162,8 +1162,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
         Collections.<Entry<String, String>>emptyList());
 
     // Compute the hash of the body.
-    byte[] hash = DigestUtils.sha(jsonBody);
-    byte[] encodedHash = Base64.encodeBase64(hash, false);
+    byte[] rawBody = jsonBody.getBytes(UTF_8);
+    byte[] hash = DigestUtils.sha(rawBody);
+    byte[] encodedHash = Base64.encodeBase64(hash);
     message.addParameter(OAUTH_BODY_HASH, new String(encodedHash, UTF_8));
 
     // Add other parameters.
@@ -1180,9 +1181,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     for (Map.Entry<String, String> p : message.getParameters()) {
       if (!p.getKey().equals(jsonBody)) {
         sb.append(connector);
-        sb.append(URLEncoder.encode(p.getKey(), "UTF-8"));
+        sb.append(URLEncoder.encode(p.getKey(), UTF_8));
         sb.append('=');
-        sb.append(URLEncoder.encode(p.getValue(), "UTF-8"));
+        sb.append(URLEncoder.encode(p.getValue(), UTF_8));
         connector = '&';
       }
     }

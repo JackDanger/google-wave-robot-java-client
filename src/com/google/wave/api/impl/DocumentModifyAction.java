@@ -1,16 +1,17 @@
-/* Copyright (c) 2009 Google Inc.
+/*
+ * Copyright (c) 2009 Google Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.wave.api.impl;
@@ -22,36 +23,40 @@ import java.util.List;
 
 /**
  * DocumentModifyAction is a class specific to how operations of type
- * DOCUMENT_MODIFY are serialized. DocumentModifyAction specifies what
- * should happen to matched bits of the document.
+ * DOCUMENT_MODIFY are serialized. DocumentModifyAction specifies what should
+ * happen to matched bits of the document.
  *
  */
 
 public class DocumentModifyAction {
 
   public enum ModifyHow {
-    DELETE,
-    REPLACE,
-    INSERT,
-    INSERT_AFTER,
-    ANNOTATE,
-    CLEAR_ANNOTATION,
-    UPDATE_ELEMENT;
+    DELETE, REPLACE, INSERT, INSERT_AFTER, ANNOTATE, CLEAR_ANNOTATION, UPDATE_ELEMENT;
+  }
+
+  /**
+   * Initial annotations to be applied to the document modification range.
+   */
+  static public class BundledAnnotation {
+    public String key;
+    public String value;
   }
 
   private ModifyHow modifyHow;
   private List<String> values;
   private String annotationKey;
   private List<Element> elements;
+  private List<BundledAnnotation> bundledAnnotations;
   private boolean useMarkup;
 
   public DocumentModifyAction(ModifyHow modifyHow, List<String> values, String annotationKey,
-      List<Element> elements, boolean useMarkup) {
+      List<Element> elements, List<BundledAnnotation> initialAnnotations, boolean useMarkup) {
     this.modifyHow = modifyHow;
     this.values = values;
     this.annotationKey = annotationKey;
     this.elements = elements;
     this.useMarkup = useMarkup;
+    this.bundledAnnotations = initialAnnotations;
   }
 
   // No parameter constructor for serialization
@@ -61,6 +66,7 @@ public class DocumentModifyAction {
     this.annotationKey = null;
     this.elements = null;
     this.useMarkup = false;
+    this.bundledAnnotations = null;
   }
 
   public ModifyHow getModifyHow() {
@@ -111,5 +117,9 @@ public class DocumentModifyAction {
       return false;
     }
     return values.get(valueIndex % values.size()) != null;
+  }
+
+  public List<BundledAnnotation> getBundledAnnotations() {
+    return bundledAnnotations;
   }
 }

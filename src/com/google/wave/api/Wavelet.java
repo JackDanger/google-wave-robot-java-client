@@ -270,7 +270,7 @@ public class Wavelet {
     // Adjust the content of the root blip, if it is available in the context.
     Blip rootBlip = getRootBlip();
     if (rootBlip != null) {
-      String content = "";
+      String content = "\n";
       int indexOfSecondNewline = rootBlip.getContent().indexOf('\n', 1);
       if (indexOfSecondNewline != -1) {
         content = rootBlip.getContent().substring(indexOfSecondNewline);

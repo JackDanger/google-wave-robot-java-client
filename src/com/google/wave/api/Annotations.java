@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -197,7 +198,7 @@ public class Annotations implements Iterable<Annotation> {
    * @return a set of annotation names.
    */
   public Set<String> namesSet() {
-    return store.keySet();
+    return new HashSet<String>(store.keySet());
   }
 
   /**

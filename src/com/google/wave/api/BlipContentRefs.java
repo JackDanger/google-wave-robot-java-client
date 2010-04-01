@@ -39,13 +39,13 @@ import java.util.Map.Entry;
  * {@link BlipContentRefs} are used to express operations on a blip in a
  * consistent way that can be easily transfered to the server.
  */
-public class BlipContentRefs {
+public class BlipContentRefs implements Iterable<Range> {
 
   /** The blip that this blip references are pointing to. */
   private final Blip blip;
 
   /** The iterator to iterate over the blip content. */
-  private final BlipIterator iterator;
+  private final BlipIterator<?> iterator;
 
   /** The additional parameters that need to be supplied in the outgoing op. */
   private final List<Parameter> parameters;
@@ -122,7 +122,7 @@ public class BlipContentRefs {
    * @param parameters the additional parameters to be passed in the outgoing
    *     operation.
    */
-  private BlipContentRefs(Blip blip, BlipIterator iterator, Parameter... parameters) {
+  private BlipContentRefs(Blip blip, BlipIterator<?> iterator, Parameter... parameters) {
     this.blip = blip;
     this.iterator = iterator;
     this.parameters = Arrays.asList(parameters);
@@ -252,9 +252,7 @@ public class BlipContentRefs {
           blip.setContent(blip.getContent().substring(0, start) + text +
               blip.getContent().substring(end));
 
-          if (next instanceof Markup) {
-            useMarkup = true;
-          } else if (next instanceof Element) {
+          if (next instanceof Element) {
             blip.getElements().put(start, Element.class.cast(next));
           }
           break;
@@ -294,7 +292,7 @@ public class BlipContentRefs {
           if (argument instanceof Element) {
             elements.add(Element.class.cast(argument));
             values.add(null);
-          } else if (argument instanceof Plaintext || argument instanceof Markup){
+          } else if (argument instanceof Plaintext){
             values.add(BlipContent.class.cast(argument).getText());
             elements.add(null);
           }
@@ -303,7 +301,7 @@ public class BlipContentRefs {
     }
 
     op.addParameter(Parameter.of(ParamsProperty.MODIFY_ACTION,
-        new DocumentModifyAction(modifyHow, values, annotationName, elements, useMarkup)));
+        new DocumentModifyAction(modifyHow, values, annotationName, elements, null, useMarkup)));
 
     iterator.reset();
     return this;
@@ -495,5 +493,11 @@ public class BlipContentRefs {
     }
     iterator.reset();
     return result;
+  }
+
+  @Override
+  public Iterator<Range> iterator() {
+    iterator.reset();
+    return iterator;
   }
 }

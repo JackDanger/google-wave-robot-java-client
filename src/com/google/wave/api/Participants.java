@@ -16,8 +16,8 @@
 package com.google.wave.api;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -45,7 +45,7 @@ public class Participants implements Set<String> {
    */
   public Participants(Collection<String> participants, Wavelet wavelet,
       OperationQueue operationQueue) {
-    this.participants = new HashSet<String>(participants);
+    this.participants = new LinkedHashSet<String>(participants);
     this.wavelet = wavelet;
     this.operationQueue = operationQueue;
   }

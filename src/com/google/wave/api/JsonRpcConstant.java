@@ -117,6 +117,7 @@ public class JsonRpcConstant {
     NAME("name", String.class),
     NEW_BLIP_ID("newBlipId", String.class),
     PARTICIPANT_ID("participantId", String.class),
+    PARTICIPANT_ROLE("participantRole", String.class),
     PROXYING_FOR("proxyingFor", String.class),
     QUERY("query", String.class),
     RANGE("range", Range.class),

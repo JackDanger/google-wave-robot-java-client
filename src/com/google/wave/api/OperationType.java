@@ -39,6 +39,7 @@ public enum OperationType {
   WAVELET_APPEND_DATADOC("wavelet.appendDatadoc"),
   WAVELET_SET_DATADOC("wavelet.setDatadoc"),
   WAVELET_MODIFY_TAG("wavelet.modifyTag"),
+  WAVELET_MODIFY_PARTICIPANT_ROLE("wavelet.modifyParticipantRole"),
 
   BLIP_CREATE_CHILD("blip.createChild"),
   BLIP_DELETE("blip.delete"),
@@ -98,7 +99,7 @@ public enum OperationType {
 
   @Deprecated DOCUMENT_INLINE_BLIP_APPEND("document.inlineBlip.append"),
   @Deprecated DOCUMENT_INLINE_BLIP_INSERT("document.inlineBlip.insert"),
-  @Deprecated DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT("document.inlineBlip.insertAfterElement"),
+  @Deprecated DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT("document.inlineBlip.insertAfterElement")
   ;
 
   private static final Logger LOG = Logger.getLogger(OperationType.class.getName());

@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A class that models a single blip instance.
@@ -33,6 +35,9 @@ import java.util.Map.Entry;
  * annotations, content and elements.
  */
 public class Blip {
+
+  /** The {@link Pattern} object used to search markup content. */
+  private static final Pattern MARKUP_PATTERN = Pattern.compile("\\<.*?\\>");
 
   /** The id of this blip. */
   private final String blipId;
@@ -487,6 +492,16 @@ public class Blip {
   }
 
   /**
+   * Appends markup ({@code HTML}) content.
+   *
+   * @param markup the markup content to add.
+   */
+  public void appendMarkup(String markup) {
+    operationQueue.appendMarkupToDocument(this, markup);
+    this.content += convertToPlainText(markup);
+  }
+
+  /**
    * Returns a view of this blip that will proxy for the specified id.
    *
    * A shallow copy of the current blip is returned with the {@code proxyingFor}
@@ -539,6 +554,27 @@ public class Blip {
    */
   protected void deleteChildBlipId(String childBlipId) {
     this.childBlipIds.remove(childBlipId);
+  }
+
+  /**
+   * Converts the given {@code HTML} into robot compatible plaintext.
+   *
+   * @param html the {@code HTML} to convert.
+   * @return a plain text version of the given {@code HTML}.
+   */
+  private static String convertToPlainText(String html) {
+    StringBuffer result = new StringBuffer();
+    Matcher matcher = MARKUP_PATTERN.matcher(html);
+    while (matcher.find()) {
+      String replacement = "";
+      String tag = matcher.group().substring(1, matcher.group().length() - 1).split(" ")[0];
+      if ("p".equals(tag) || "br".equals(tag)) {
+        replacement = "\n";
+      }
+      matcher.appendReplacement(result, replacement);
+    }
+    matcher.appendTail(result);
+    return result.toString();
   }
 
   /**

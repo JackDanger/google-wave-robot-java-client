@@ -32,6 +32,7 @@ public class WaveletData {
   private long lastModifiedTime = -1L;
   private long version = -1L;
   private List<String> participants = new ArrayList<String>();
+  private Map<String, String> participantRoles = new HashMap<String, String>();
   private Map<String, String> dataDocuments = new HashMap<String, String>();
   private List<String> tags = new ArrayList<String>();
   private String creator;
@@ -57,6 +58,7 @@ public class WaveletData {
     this.creator = wavelet.getCreator();
     this.lastModifiedTime = wavelet.getLastModifiedTime();
     this.participants = wavelet.getParticipants();
+    this.participantRoles = new HashMap<String, String>(wavelet.getParticipantRoles());
     this.rootBlipId = wavelet.getRootBlipId();
     this.title = wavelet.getTitle();
     this.version = wavelet.getVersion();
@@ -64,6 +66,14 @@ public class WaveletData {
     this.waveletId = wavelet.getWaveletId();
     this.dataDocuments = new HashMap<String, String>(wavelet.getDataDocuments());
     this.tags = new ArrayList<String>(wavelet.getTags());
+  }
+
+  /**
+   * @returns a map of participantId to role for participants that don't have
+   * the default role.
+   */
+  public Map<String, String> getParticipantRoles() {
+    return participantRoles;
   }
 
   public long getCreationTime() {
@@ -176,5 +186,9 @@ public class WaveletData {
 
   public void addParticipant(String participant) {
     participants.add(participant);
+  }
+
+  public void setParticipantRole(String participant, String role) {
+    participantRoles.put(participant, role);
   }
 }

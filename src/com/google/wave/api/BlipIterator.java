@@ -21,115 +21,111 @@ import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 
 /**
- * An interface that encapsulates iteration over blip content, that consists of
- * text or element.
+ * An iterator over blip content, that consists of text or element.
+ *
+ * Please note that this iterator does not support {@code remove} operation at
+ * the moment.
+ *
+ * @param <T> the generic type of the target entity to match.
  */
-public interface BlipIterator extends Iterator<Range> {
+public abstract class BlipIterator<T> implements Iterator<Range> {
+
+  /** The blip to be iterated. */
+  protected final Blip blip;
+
+  /** The target to be matched. */
+  protected final T target;
+
+  /** The maximum number of iterations allowed. */
+  private final int maxHits;
+
+  /** The range size of a match. */
+  private final int rangeSize;
+
+  /** The number of allowed iterations left. */
+  private int hitsLeft;
+
+  /** The current position of the iterator. */
+  protected int position;
+
+  /**
+   * Constructor.
+   *
+   * @param blip the blip to be iterated.
+   * @param target the target to be matched.
+   * @param maxHits the maximum number of iterations allowed.
+   * @param rangeSize the size of a matching range, for example, 1 for element
+   *     iteration, or the length of the {@code target} for text/string
+   *     iteration.
+   */
+  protected BlipIterator(Blip blip, T target, int maxHits, int rangeSize) {
+    this.blip = blip;
+    this.target = target;
+    this.maxHits = maxHits;
+    this.rangeSize = rangeSize;
+    reset();
+  }
+
+  @Override
+  public boolean hasNext() {
+    return hitsLeft != 0  && getNextIndex() != -1;
+  }
+
+  @Override
+  public Range next() {
+    if (hitsLeft == 0) {
+      throw new NoSuchElementException();
+    }
+
+    int index = getNextIndex();
+    if (index == -1) {
+      throw new NoSuchElementException();
+    }
+
+    hitsLeft--;
+    position = index;
+    return new Range(position, position + rangeSize);
+  }
+
+  /**
+   * {@code remove} is not supported.
+   *
+   * @throws UnsupportedOperationException this operation is not supported yet.
+   *     it will throw {@link UnsupportedOperationException} on all invocations.
+   */
+  @Override
+  public void remove() {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Shifts the iterator cursor.
    *
-   * @param delta the shift amount.
+   * @param shiftAmount the shift amount.
    */
-  void shift(int delta);
+  void shift(int shiftAmount) {
+    this.position += shiftAmount;
+  }
 
   /**
    * Shifts the iterator cursor to beginning, to reset iteration.
    */
-  void reset();
+  void reset() {
+    this.position = -1;
+    this.hitsLeft = maxHits;
+  }
 
   /**
-   * A base class for all blip iterators.
+   * Returns the index of the next match.
    *
-   * @param <T> the generic type of the target entity to match.
+   * @return the index of the next match, or -1 if there is no more match.
    */
-  abstract static class AbstractBlipIterator<T> implements BlipIterator {
-
-    /** The blip to be iterated. */
-    protected final Blip blip;
-
-    /** The target to be matched. */
-    protected final T target;
-
-    /** The maximum number of iterations allowed. */
-    private final int maxHits;
-
-    /** The range size of a match. */
-    private final int rangeSize;
-
-    /** The number of allowed iterations left. */
-    private int hitsLeft;
-
-    /** The current position of the iterator. */
-    protected int position;
-
-    /**
-     * Constructor.
-     *
-     * @param blip the blip to be iterated.
-     * @param target the target to be matched.
-     * @param maxHits the maximum number of iterations allowed.
-     * @param rangeSize the size of a matching range, for example, 1 for element
-     *     iteration, or the length of the {@code target} for text/string
-     *     iteration.
-     */
-    protected AbstractBlipIterator(Blip blip, T target, int maxHits, int rangeSize) {
-      this.blip = blip;
-      this.target = target;
-      this.maxHits = maxHits;
-      this.rangeSize = rangeSize;
-      reset();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return hitsLeft != 0  && getNextIndex() != -1;
-    }
-
-    @Override
-    public Range next() {
-      if (hitsLeft == 0) {
-        throw new NoSuchElementException();
-      }
-
-      int index = getNextIndex();
-      if (index == -1) {
-        throw new NoSuchElementException();
-      }
-
-      hitsLeft--;
-      position = index;
-      return new Range(position, position + rangeSize);
-    }
-
-    @Override
-    public void shift(int shiftAmount) {
-      this.position += shiftAmount;
-    }
-
-    @Override
-    public void reset() {
-      this.position = -1;
-      this.hitsLeft = maxHits;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Returns the index of the next match.
-     *
-     * @return the index of the next match, or -1 if there is no more match.
-     */
-    protected abstract int getNextIndex();
-  }
+  protected abstract int getNextIndex();
 
   /**
    * A blip iterator that allows a single iteration over a given range.
    */
-  static class SingleshotIterator extends AbstractBlipIterator<Void> {
+  static final class SingleshotIterator extends BlipIterator<Void> {
 
     /** The starting index of the range. */
     private final int start;
@@ -156,7 +152,7 @@ public interface BlipIterator extends Iterator<Range> {
   /**
    * A blip iterator that allows iteration over text/string content.
    */
-  static class TextIterator extends AbstractBlipIterator<String> {
+  static final class TextIterator extends BlipIterator<String> {
 
     /**
      * Constructor.
@@ -179,7 +175,7 @@ public interface BlipIterator extends Iterator<Range> {
    * A blip iterator that allows iteration over element content, such as,
    * gadget, form element, image, and so on.
    */
-  static class ElementIterator extends AbstractBlipIterator<ElementType> {
+  static final class ElementIterator extends BlipIterator<ElementType> {
 
     /** A map of restrictions that would be applied during iteration.  */
     private final Map<String, String> restrictions;
