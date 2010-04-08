@@ -466,11 +466,26 @@ public class OperationQueue {
     String rootBlipId = String.format(TEMP_BLIP_ID_FORMAT, waveletId.serialise(),
         ID_GENERATOR.nextInt());
     Map<String, Blip> blips = new HashMap<String, Blip>();
-    Wavelet wavelet = new Wavelet(waveId, waveletId, rootBlipId, participants, blips, opQueue);
+    Map<String, String> roles = new HashMap<String, String>();
+    Wavelet wavelet = new Wavelet(
+        waveId, waveletId, rootBlipId, participants, roles, blips, opQueue);
 
     Blip rootBlip = new Blip(rootBlipId, "", null, wavelet);
     blips.put(rootBlipId, rootBlip);
 
     return wavelet;
+  }
+
+  /**
+   * Modifies the role of a participant in a wavelet.
+   *
+   * @param wavelet the wavelet that the participant is on
+   * @param participant whose role to modify
+   * @param role to set for the participant
+   */
+  public void modifyParticipantRoleOfWavelet(Wavelet wavelet, String participant, String role) {
+    appendOperation(OperationType.WAVELET_MODIFY_PARTICIPANT_ROLE, wavelet,
+        Parameter.of(ParamsProperty.PARTICIPANT_ID, participant),
+        Parameter.of(ParamsProperty.PARTICIPANT_ROLE, role));
   }
 }

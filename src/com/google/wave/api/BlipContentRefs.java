@@ -18,8 +18,9 @@ package com.google.wave.api;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
 import com.google.wave.api.OperationRequest.Parameter;
 import com.google.wave.api.impl.DocumentModifyAction;
-import com.google.wave.api.impl.DocumentModifyQuery;
+import com.google.wave.api.impl.DocumentModifyAction.BundledAnnotation;
 import com.google.wave.api.impl.DocumentModifyAction.ModifyHow;
+import com.google.wave.api.impl.DocumentModifyQuery;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,6 +133,8 @@ public class BlipContentRefs implements Iterable<Range> {
    * Executes this BlipRefs object.
    *
    * @param modifyHow the operation to be executed.
+   * @param bundledAnnotations optional list of annotations to immediately
+   *     apply to newly added text.
    * @param arguments a list of arguments for the operation. The arguments vary
    *     depending on the operation:
    *     <ul>
@@ -152,7 +155,8 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return this instance of blip references, for chaining.
    */
   @SuppressWarnings({"unchecked", "fallthrough"})
-  private BlipContentRefs execute(ModifyHow modifyHow, Object... arguments) {
+  private BlipContentRefs execute(
+      ModifyHow modifyHow, List<BundledAnnotation> bundledAnnotations, Object... arguments) {
     // If there is no match found, return immediately without generating op.
     if (!iterator.hasNext()) {
       return this;
@@ -254,6 +258,10 @@ public class BlipContentRefs implements Iterable<Range> {
 
           if (next instanceof Element) {
             blip.getElements().put(start, Element.class.cast(next));
+          } else if (bundledAnnotations != null) {
+            for (BundledAnnotation bundled : bundledAnnotations) {
+              blip.getAnnotations().add(bundled.key, bundled.value, start, start + text.length());
+            }
           }
           break;
       }
@@ -301,7 +309,8 @@ public class BlipContentRefs implements Iterable<Range> {
     }
 
     op.addParameter(Parameter.of(ParamsProperty.MODIFY_ACTION,
-        new DocumentModifyAction(modifyHow, values, annotationName, elements, null, useMarkup)));
+        new DocumentModifyAction(
+            modifyHow, values, annotationName, elements, bundledAnnotations, useMarkup)));
 
     iterator.reset();
     return this;
@@ -314,7 +323,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs insert(BlipContent... arguments) {
-    return execute(ModifyHow.INSERT, (Object[]) arguments);
+    return insert(null, arguments);
   }
 
   /**
@@ -324,11 +333,36 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs insert(String... arguments) {
+    return insert(null, arguments);
+  }
+
+  /**
+   * Inserts the given arguments at the matched positions.
+   *
+   * @param bundledAnnotations annotations to immediately apply to the inserted
+   *     text.
+   * @param arguments the new contents to be inserted.
+   * @return an instance of this blip references, for chaining.
+   */
+  public BlipContentRefs insert(
+      List<BundledAnnotation> bundledAnnotations, BlipContent... arguments) {
+    return execute(ModifyHow.INSERT, bundledAnnotations, (Object[]) arguments);
+  }
+
+  /**
+   * Inserts the given strings at the matched positions.
+   *
+   * @param bundledAnnotations annotations to immediately apply to the inserted
+   *     text.
+   * @param arguments the new strings to be inserted.
+   * @return an instance of this blip references, for chaining.
+   */
+  public BlipContentRefs insert(List<BundledAnnotation> bundledAnnotations, String... arguments) {
     Object[] array = new Plaintext[arguments.length];
     for (int i = 0; i < arguments.length; ++i) {
       array[i] = Plaintext.of(arguments[i]);
     }
-    return execute(ModifyHow.INSERT, array);
+    return execute(ModifyHow.INSERT, bundledAnnotations, array);
   }
 
   /**
@@ -338,7 +372,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs insertAfter(BlipContent... arguments) {
-    return execute(ModifyHow.INSERT_AFTER, (Object[]) arguments);
+    return insertAfter(null, arguments);
   }
 
   /**
@@ -348,11 +382,37 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs insertAfter(String... arguments) {
+    return insertAfter(null, arguments);
+  }
+
+  /**
+   * Inserts the given arguments just after the matched positions.
+   *
+   * @param bundledAnnotations annotations to immediately apply to the inserted
+   *     text.
+   * @param arguments the new contents to be inserted.
+   * @return an instance of this blip references, for chaining.
+   */
+  public BlipContentRefs insertAfter(
+      List<BundledAnnotation> bundledAnnotations, BlipContent... arguments) {
+    return execute(ModifyHow.INSERT_AFTER, bundledAnnotations, (Object[]) arguments);
+  }
+
+  /**
+   * Inserts the given strings just after the matched positions.
+   *
+   * @param bundledAnnotations annotations to immediately apply to the inserted
+   *     text.
+   * @param arguments the new strings to be inserted.
+   * @return an instance of this blip references, for chaining.
+   */
+  public BlipContentRefs insertAfter(
+      List<BundledAnnotation> bundledAnnotations, String... arguments) {
     Object[] array = new Plaintext[arguments.length];
     for (int i = 0; i < arguments.length; ++i) {
       array[i] = Plaintext.of(arguments[i]);
     }
-    return execute(ModifyHow.INSERT_AFTER, array);
+    return execute(ModifyHow.INSERT_AFTER, bundledAnnotations, array);
   }
 
   /**
@@ -362,7 +422,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs replace(BlipContent... arguments) {
-    return execute(ModifyHow.REPLACE, (Object[]) arguments);
+    return replace(null, arguments);
   }
 
   /**
@@ -372,11 +432,36 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs replace(String... arguments) {
+    return replace(null, arguments);
+  }
+
+  /**
+   * Replaces the matched positions with the given arguments.
+   *
+   * @param bundledAnnotations annotations to immediately apply to the inserted
+   *     text.
+   * @param arguments the new contents to replace the original contents.
+   * @return an instance of this blip references, for chaining.
+   */
+  public BlipContentRefs replace(
+      List<BundledAnnotation> bundledAnnotations, BlipContent... arguments) {
+    return execute(ModifyHow.REPLACE, bundledAnnotations, (Object[]) arguments);
+  }
+
+  /**
+   * Replaces the matched positions with the given strings.
+   *
+   * @param bundledAnnotations annotations to immediately apply to the inserted
+   *     text.
+   * @param arguments the new strings to replace the original contents.
+   * @return an instance of this blip references, for chaining.
+   */
+  public BlipContentRefs replace(List<BundledAnnotation> bundledAnnotations, String... arguments) {
     Object[] array = new Plaintext[arguments.length];
     for (int i = 0; i < arguments.length; ++i) {
       array[i] = Plaintext.of(arguments[i]);
     }
-    return execute(ModifyHow.REPLACE, array);
+    return execute(ModifyHow.REPLACE, bundledAnnotations, array);
   }
 
   /**
@@ -385,7 +470,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs delete() {
-    return execute(ModifyHow.DELETE);
+    return execute(ModifyHow.DELETE, null);
   }
 
   /**
@@ -404,7 +489,7 @@ public class BlipContentRefs implements Iterable<Range> {
     for (int i = 0; i < values.length; ++i) {
       annotations[i] = new Annotation(key, values[i], 0, 1);
     }
-    return execute(ModifyHow.ANNOTATE, (Object[]) annotations);
+    return execute(ModifyHow.ANNOTATE, null, (Object[]) annotations);
   }
 
   /**
@@ -414,7 +499,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs clearAnnotation(String key) {
-    return execute(ModifyHow.CLEAR_ANNOTATION, key);
+    return execute(ModifyHow.CLEAR_ANNOTATION, null, key);
   }
 
   /**
@@ -431,7 +516,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs updateElement(Map<String, String> newProperties) {
-    return execute(ModifyHow.UPDATE_ELEMENT, new Object[] {newProperties});
+    return execute(ModifyHow.UPDATE_ELEMENT, null, new Object[] {newProperties});
   }
 
   /**
@@ -442,7 +527,7 @@ public class BlipContentRefs implements Iterable<Range> {
    * @return an instance of this blip references, for chaining.
    */
   public BlipContentRefs updateElement(Map<String, String>... newProperties) {
-    return execute(ModifyHow.UPDATE_ELEMENT, (Object[]) newProperties);
+    return execute(ModifyHow.UPDATE_ELEMENT, null, (Object[]) newProperties);
   }
 
   /**

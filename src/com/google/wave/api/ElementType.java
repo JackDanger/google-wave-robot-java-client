@@ -17,7 +17,7 @@ package com.google.wave.api;
 
 /**
  * Element Types.
- * 
+ *
  * @author scovitz@google.com (Seth Covitz)
  * @author mprasetya@google.com (Marcel Prasetya)
  */
@@ -39,20 +39,20 @@ public enum ElementType {
   LINE("LINE");
 
   private final String text;
-  
+
   private ElementType(String text) {
     this.text = text;
   }
-  
+
   @Override
   public String toString() {
     return text;
   }
-  
+
   /**
    * Converts a string into an ElementType. This is used primarily during
-   * deserialization from JSON. 
-   * 
+   * deserialization from JSON.
+   *
    * @param name the name of the ElementType.
    * @return the ElementType representing that name.
    */

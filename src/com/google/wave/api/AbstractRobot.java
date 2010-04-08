@@ -383,7 +383,8 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
    */
   public Wavelet blindWavelet(WaveId waveId, WaveletId waveletId, String proxyForId,
       Map<String, Blip> blips) {
-    return new Wavelet(waveId, waveletId, null, Collections.<String>emptySet(), blips,
+    Map<String, String> roles = new HashMap<String, String>();
+    return new Wavelet(waveId, waveletId, null, Collections.<String>emptySet(), roles, blips,
         new OperationQueue(proxyForId));
   }
 
@@ -502,7 +503,8 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
       String rootBlipId = (String) response.getData().get(ParamsProperty.BLIP_ID);
 
       Map<String, Blip> blips = new HashMap<String, Blip>();
-      newWavelet = new Wavelet(waveId, waveletId, rootBlipId, participants, blips, opQueue);
+      Map<String, String> roles = new HashMap<String, String>();
+      newWavelet = new Wavelet(waveId, waveletId, rootBlipId, participants, roles, blips, opQueue);
       blips.put(rootBlipId, new Blip(rootBlipId, "", null, newWavelet));
     }
     return newWavelet;
@@ -953,10 +955,15 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     for (Method baseMethod : EventHandler.class.getDeclaredMethods()) {
       Method overridenMethod = null;
       try {
-        overridenMethod = this.getClass().getDeclaredMethod(baseMethod.getName(),
+        overridenMethod = this.getClass().getMethod(baseMethod.getName(),
             baseMethod.getParameterTypes());
       } catch (NoSuchMethodException e) {
         // Robot does not override this particular event handler. Continue.
+        continue;
+      }
+
+      // Skip the method, if it's declared in AbstractRobot.
+      if (AbstractRobot.class.equals(overridenMethod.getDeclaringClass())) {
         continue;
       }
 

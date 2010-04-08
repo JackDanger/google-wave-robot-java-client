@@ -15,6 +15,7 @@
 
 package com.google.wave.api;
 
+import com.google.wave.api.Participants.Role;
 import com.google.wave.api.impl.WaveletData;
 
 import org.waveprotocol.wave.model.id.WaveId;
@@ -93,6 +94,7 @@ public class Wavelet {
    * @param lastModifiedTime the last modified time of this wavelet.
    * @param title the title of this wavelet.
    * @param rootBlipId the root blip id of this wavelet.
+   * @param participantRoles the roles for those participants
    * @param participants the participants of this wavelet.
    * @param dataDocuments the data documents of this wavelet.
    * @param tags the tags that this wavelet has.
@@ -101,9 +103,10 @@ public class Wavelet {
    *     proxy.
    */
   Wavelet(WaveId waveId, WaveletId waveletId, String creator, long creationTime,
-      long lastModifiedTime, String title, String rootBlipId, Set<String> participants,
-      Map<String, String> dataDocuments, Set<String> tags, Map<String, Blip> blips,
-      OperationQueue operationQueue) {
+      long lastModifiedTime, String title, String rootBlipId, 
+      Map<String, String> participantRoles, Set<String> participants,
+      Map<String, String> dataDocuments,
+      Set<String> tags, Map<String, Blip> blips, OperationQueue operationQueue) {
     this.waveId = waveId;
     this.waveletId = waveletId;
     this.creator = creator;
@@ -111,7 +114,7 @@ public class Wavelet {
     this.lastModifiedTime = lastModifiedTime;
     this.title = title;
     this.rootBlipId = rootBlipId;
-    this.participants = new Participants(participants, this, operationQueue);
+    this.participants = new Participants(participants, participantRoles, this, operationQueue);
     this.dataDocuments = new DataDocuments(dataDocuments, this, operationQueue);
     this.tags = new Tags(tags, this, operationQueue);
     this.blips = blips;
@@ -125,12 +128,14 @@ public class Wavelet {
    * @param waveletId the id of this wavelet.
    * @param rootBlipId the root blip id of this wavelet.
    * @param participants the participants of this wavelet.
+   * @param participantRoles the roles for those participants
    * @param blips the blips that are contained in this wavelet.
    * @param operationQueue the operation queue to queue operation to the robot
    *     proxy.
    */
   Wavelet(WaveId waveId, WaveletId waveletId, String rootBlipId, Set<String> participants,
-      Map<String, Blip> blips, OperationQueue operationQueue) {
+      Map<String, String> participantRoles, Map<String, Blip> blips,
+      OperationQueue operationQueue) {
     this.waveId = waveId;
     this.waveletId = waveletId;
     this.rootBlipId = rootBlipId;
@@ -138,7 +143,7 @@ public class Wavelet {
     this.creationTime = -1;
     this.lastModifiedTime = -1;
     this.title = null;
-    this.participants = new Participants(participants, this, operationQueue);
+    this.participants = new Participants(participants, participantRoles, this, operationQueue);
     this.dataDocuments = new DataDocuments(new HashMap<String, String>(), this,
         operationQueue);
     this.tags = new Tags(Collections.<String>emptySet(), this, operationQueue);
@@ -510,8 +515,11 @@ public class Wavelet {
     List<String> participants = new ArrayList<String>();
     for (String participant : this.participants) {
       participants.add(participant);
+      Role role = getParticipants().getParticipantRole(participant);
+      waveletData.setParticipantRole(participant, role.name());
     }
     waveletData.setParticipants(participants);
+    
 
     // Add data documents.
     Map<String, String> dataDocuments = new HashMap<String, String>();
@@ -544,8 +552,9 @@ public class Wavelet {
     Set<String> participants = new LinkedHashSet<String>(waveletData.getParticipants());
     Set<String> tags = new LinkedHashSet<String>(waveletData.getTags());
     Map<String, String> dataDocuments = waveletData.getDataDocuments();
+    Map<String, String> roles = waveletData.getParticipantRoles();
 
     return new Wavelet(waveId, waveletId, creator, creationTime, lastModifiedTime, title,
-        rootBlipId, participants, dataDocuments, tags, blips, operationQueue);
+        rootBlipId, roles, participants, dataDocuments, tags, blips, operationQueue);
   }
 }

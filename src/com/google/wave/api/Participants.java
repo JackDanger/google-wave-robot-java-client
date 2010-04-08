@@ -15,9 +15,11 @@
 
 package com.google.wave.api;
 
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +27,18 @@ import java.util.Set;
  * participant related operations, such as, adding participant to a wavelet.
  */
 public class Participants implements Set<String> {
+
+  /**
+   * Roles to use for the participants
+   */
+  public enum Role {
+    /** Full member. */
+    FULL,
+    /** Can only view the wave. */
+    READ_ONLY,
+    /** Not recognized. Probably a newer server version. */
+    UNKNOWN;
+  }
 
   /** A set of participant id that represents wavelet participants. */
   private final Set<String> participants;
@@ -35,6 +49,11 @@ public class Participants implements Set<String> {
   /** The operation queue to queue operation to the robot proxy. */
   private final OperationQueue operationQueue;
 
+  /** The roles of the participants. The values are strings to match the wire
+   * protocol.
+   */
+  private final Map<String, String> roles;
+
   /**
    * Constructor.
    *
@@ -43,9 +62,10 @@ public class Participants implements Set<String> {
    * @param operationQueue the operation queue to queue operation to the robot
    *     proxy.
    */
-  public Participants(Collection<String> participants, Wavelet wavelet,
-      OperationQueue operationQueue) {
+  public Participants(Collection<String> participants, Map<String, String> roles,
+      Wavelet wavelet, OperationQueue operationQueue) {
     this.participants = new LinkedHashSet<String>(participants);
+    this.roles = roles;
     this.wavelet = wavelet;
     this.operationQueue = operationQueue;
   }
@@ -155,5 +175,22 @@ public class Participants implements Set<String> {
   @Override
   public <T> T[] toArray(T[] a) {
     return participants.toArray(a);
+  }
+
+  public void setParticipantRole(String participant, Role role) {
+    operationQueue.modifyParticipantRoleOfWavelet(wavelet, participant, role.name());
+    roles.put(participant, role.name());
+  }
+  
+  public Role getParticipantRole(String participant) {
+    String stringRole = roles.get(participant);
+    if (stringRole == null) {
+      return Role.FULL;
+    }
+    try {
+      return Role.valueOf(stringRole);
+    } catch (IllegalArgumentException e) {
+      return Role.UNKNOWN;
+    }
   }
 }

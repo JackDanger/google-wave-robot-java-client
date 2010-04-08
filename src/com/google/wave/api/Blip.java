@@ -484,10 +484,15 @@ public class Blip {
   /**
    * Inserts an inline blip at the given position.
    *
-   * @param position the index to insert the inline blip at.
+   * @param position the index to insert the inline blip at. This has to be
+   *     greater than 0.
    * @return an instance of {@link Blip} that represents the new inline blip.
    */
   public Blip insertInlineBlip(int position) {
+    if (position <= 0) {
+      throw new IllegalArgumentException("Illegal inline blip position: " + position +
+          ". Position has to be greater than 0.");
+    }
     return operationQueue.insertInlineBlipToDocument(this, position);
   }
 
