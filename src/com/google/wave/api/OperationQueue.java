@@ -437,6 +437,12 @@ public class OperationQueue {
     String tempBlipId = String.format(TEMP_BLIP_ID_FORMAT, wavelet.getWaveletId().serialise(),
         ID_GENERATOR.nextInt());
     Blip newBlip = new Blip(tempBlipId, initialContent, parentBlipId, wavelet);
+    if (parentBlipId != null) {
+      Blip parentBlip = wavelet.getBlips().get(parentBlipId);
+      if (parentBlip != null) {
+        parentBlip.getChildBlipIds().add(newBlip.getBlipId());
+      }
+    }
     wavelet.getBlips().put(newBlip.getBlipId(), newBlip);
     return newBlip;
   }

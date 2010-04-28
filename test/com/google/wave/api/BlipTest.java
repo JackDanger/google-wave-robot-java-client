@@ -208,7 +208,7 @@ public class BlipTest extends TestCase {
     assertEquals(1, wavelet.getBlips().size());
 
     try {
-      Blip inline = blip.insertInlineBlip(0);
+      blip.insertInlineBlip(0);
       fail("Should have thrown an exception when trying to insert inline blip at index 0.");
     } catch (IllegalArgumentException e) {
       // Expected.
@@ -435,11 +435,18 @@ public class BlipTest extends TestCase {
     assertEquals(3, index);
 
     // Assert iteration with blip refs that has no match.
-    index = 0;
-    for (Range range : blip.all("invalid")) {
-      index++;
-    }
-    assertEquals(0, index);
+    assertFalse(blip.all("invalid").iterator().hasNext());
+  }
+
+  public void testInlineBlip() throws Exception {
+    Blip blip = newBlip("\n1234", Collections.<Annotation>emptyList());
+    assertEquals(-1, blip.getInlineBlipOffset());
+
+    Blip inlineBlip = blip.insertInlineBlip(3);
+    assertTrue(blip.getChildBlipIds().contains(inlineBlip.getBlipId()));
+    assertEquals(3, inlineBlip.getInlineBlipOffset());
+    assertEquals("\n12 34", blip.getContent());
+    assertEquals(ElementType.INLINE_BLIP, blip.getElements().get(3).getType());
   }
 
   private static void assertEquals(Annotation one, Annotation two) {

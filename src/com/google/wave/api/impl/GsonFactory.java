@@ -74,6 +74,7 @@ public class GsonFactory {
         .registerTypeAdapter(JsonRpcResponse.class, new JsonRpcResponseGsonAdaptor())
         .registerTypeAdapter(Annotation.class, new AnnotationInstanceCreator())
         .registerTypeAdapter(Range.class, new RangeInstanceCreator())
+        .serializeNulls()
         .create();
   }
 

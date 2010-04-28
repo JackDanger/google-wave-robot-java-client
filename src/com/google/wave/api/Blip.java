@@ -36,6 +36,9 @@ import java.util.regex.Pattern;
  */
 public class Blip {
 
+  /** The property key for blip id in an inline blip element. */
+  private static final String INLINE_BLIP_ELEMENT_ID_KEY = "id";
+
   /** The {@link Pattern} object used to search markup content. */
   private static final Pattern MARKUP_PATTERN = Pattern.compile("\\<.*?\\>");
 
@@ -489,11 +492,22 @@ public class Blip {
    * @return an instance of {@link Blip} that represents the new inline blip.
    */
   public Blip insertInlineBlip(int position) {
-    if (position <= 0) {
+    if (position <= 0 || position > content.length()) {
       throw new IllegalArgumentException("Illegal inline blip position: " + position +
-          ". Position has to be greater than 0.");
+          ". Position has to be greater than 0 and less than or equal to length.");
     }
-    return operationQueue.insertInlineBlipToDocument(this, position);
+
+    // Generate the operation.
+    Blip inlineBlip =  operationQueue.insertInlineBlipToDocument(this, position);
+
+    // Insert the inline blip element.
+    Element element = new Element(ElementType.INLINE_BLIP);
+    element.setProperty(INLINE_BLIP_ELEMENT_ID_KEY, inlineBlip.getBlipId());
+    content = content.substring(0, position) + " " + content.substring(position);
+    shift(position, 1);
+    elements.put(position, element);
+
+    return inlineBlip;
   }
 
   /**
@@ -520,6 +534,30 @@ public class Blip {
   public Blip proxyFor(String proxyForId) {
     OperationQueue proxiedOperationQueue = operationQueue.proxyFor(proxyForId);
     return new Blip(this, proxiedOperationQueue);
+  }
+
+  /**
+   * Returns the offset of this blip if it is inline, or -1 if it's not. If the
+   * parent is not in the offset, this method will always return -1 since it
+   * can't determine the inline blip status.
+   *
+   * @return the offset of this blip if it is inline, or -1 if it's not inline
+   *     or if the parent is not in the context.
+   */
+  public int getInlineBlipOffset() {
+    Blip parent = getParentBlip();
+    if (parent == null) {
+      return -1;
+    }
+
+    for (Entry<Integer, Element> entry : parent.getElements().entrySet()) {
+      Element element = entry.getValue();
+      if (element.getType() == ElementType.INLINE_BLIP &&
+          blipId.equals(element.getProperty(INLINE_BLIP_ELEMENT_ID_KEY))) {
+        return entry.getKey();
+      }
+    }
+    return -1;
   }
 
   /**

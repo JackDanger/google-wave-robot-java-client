@@ -80,10 +80,16 @@ public class EventMessageBundleGsonAdaptor implements
 
     result.add(WAVELET_TAG, context.serialize(src.getWaveletData()));
     result.add(BLIPS_TAG, context.serialize(src.getBlipData()));
-    result.addProperty(PROXYING_FOR_TAG, src.getProxyingFor());
     result.addProperty(ROBOT_ADDRESS_TAG, src.getRobotAddress());
-    if (!src.getRpcServerUrl().isEmpty()) {
-      result.addProperty(RPC_SERVER_URL_TAG, src.getRpcServerUrl());
+
+    String proxyingFor = src.getProxyingFor();
+    if (proxyingFor != null && !proxyingFor.isEmpty()) {
+      result.addProperty(PROXYING_FOR_TAG, proxyingFor);
+    }
+
+    String rpcServerUrl = src.getRpcServerUrl();
+    if (rpcServerUrl != null && !rpcServerUrl.isEmpty()) {
+      result.addProperty(RPC_SERVER_URL_TAG, rpcServerUrl);
     }
     return result;
   }
