@@ -30,6 +30,7 @@ public enum EventType {
   WAVELET_TITLE_CHANGED(WaveletTitleChangedEvent.class),
   WAVELET_CREATED(WaveletCreatedEvent.class),
   WAVELET_FETCHED(WaveletFetchedEvent.class),
+  WAVELET_TAGS_CHANGED(WaveletTagsChangedEvent.class),
 
   BLIP_CONTRIBUTORS_CHANGED(BlipContributorsChangedEvent.class),
   BLIP_SUBMITTED(BlipSubmittedEvent.class),

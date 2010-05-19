@@ -18,7 +18,6 @@ package com.google.wave.api;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
-import com.google.wave.api.OperationRequest.Parameter;
 import com.google.wave.api.event.AnnotatedTextChangedEvent;
 import com.google.wave.api.event.BlipContributorsChangedEvent;
 import com.google.wave.api.event.BlipSubmittedEvent;
@@ -36,6 +35,7 @@ import com.google.wave.api.event.WaveletFetchedEvent;
 import com.google.wave.api.event.WaveletParticipantsChangedEvent;
 import com.google.wave.api.event.WaveletSelfAddedEvent;
 import com.google.wave.api.event.WaveletSelfRemovedEvent;
+import com.google.wave.api.event.WaveletTagsChangedEvent;
 import com.google.wave.api.event.WaveletTitleChangedEvent;
 import com.google.wave.api.impl.EventMessageBundle;
 import com.google.wave.api.impl.GsonFactory;
@@ -218,6 +218,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     }
   }
 
+  /** The robot wire protocol version. */
+  public static final String PROTOCOL_VERSION = "0.21";
+
   /** Some mime types. */
   public static final String JSON_MIME_TYPE = "application/json; charset=utf-8";
   public static final String TEXT_MIME_TYPE = "text/plain";
@@ -246,7 +249,6 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
       "https://wave.google.com/a/wavesandbox.com/static/images/profiles/rusty.png";
 
   private static final Logger LOG = Logger.getLogger(AbstractRobot.class.getName());
-  private static final String PROTOCOL_VERSION = "0.2";
   private static final String ACTIVE_API_OPERATION_NAMESPACE = "wave";
 
   /** Serializer to serialize events and operations in the event-based mode. */
@@ -267,9 +269,6 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
 
   /** A map of RPC server URL to its consumer data object. */
   private final Map<String, ConsumerData> consumerData = new HashMap<String, ConsumerData>();
-
-  /** The incoming HTTP request, only set in the event-based mode. */
-  private HttpServletRequest request;
 
   /** The token used to verify author during the registration process. */
   private String verificationToken;
@@ -493,7 +492,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     Wavelet newWavelet = opQueue.createWavelet(domain, participants, msg);
 
     if (rpcServerUrl != null && !rpcServerUrl.isEmpty()) {
-      JsonRpcResponse response = this.submit(newWavelet, rpcServerUrl).get(0);
+      // Get the response for the robot.fetchWavelet() operation, which is the
+      // second operation, since makeRpc prepends the robot.notify() operation.
+      JsonRpcResponse response = this.submit(newWavelet, rpcServerUrl).get(1);
       if (response.isError()) {
         throw new IOException(response.getErrorMessage());
       }
@@ -557,7 +558,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     OperationQueue opQueue = new OperationQueue(proxyForId);
     opQueue.fetchWavelet(waveId, waveletId);
 
-    JsonRpcResponse response = makeRpc(opQueue, rpcServerUrl).get(0);
+    // Get the response for the robot.fetchWavelet() operation, which is the
+    // second operation, since makeRpc prepends the robot.notify() operation.
+    JsonRpcResponse response = makeRpc(opQueue, rpcServerUrl).get(1);
     if (response.isError()) {
       throw new IOException(response.getErrorMessage());
     }
@@ -581,8 +584,7 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
-    this.request = req;
-    if (req.getRequestURI().equals(RPC_PATH)) {
+    if (req.getRequestURI().endsWith(RPC_PATH)) {
       processRpc(req, resp);
     } else {
       resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
@@ -591,13 +593,12 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-    this.request = req;
     String path = req.getRequestURI();
-    if (path.equals(PROFILE_PATH)) {
+    if (path.endsWith(PROFILE_PATH)) {
       processProfile(req, resp);
-    } else if (path.equals(CAPABILITIES_PATH)) {
+    } else if (path.endsWith(CAPABILITIES_PATH)) {
       processCapabilities(req, resp);
-    } else if (path.equals(VERIFY_TOKEN_PATH)) {
+    } else if (path.endsWith(VERIFY_TOKEN_PATH)) {
       processVerifyToken(req, resp);
     } else {
       resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
@@ -617,13 +618,6 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
    */
   protected String getRobotAvatarUrl() {
     return DEFAULT_AVATAR;
-  }
-
-  /**
-   * @return the URL of the robot's profile page.
-   */
-  protected String getRobotProfilePageUrl() {
-    return "http://" + request.getRemoteHost();
   }
 
   /**
@@ -867,8 +861,7 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     // Append robot.notifyCapabilitiesHash operation before processing the
     // events.
     OperationQueue operationQueue = events.getWavelet().getOperationQueue();
-    operationQueue.appendOperation(OperationType.ROBOT_NOTIFY_CAPABILITIES_HASH,
-        Parameter.of(ParamsProperty.CAPABILITIES_HASH, version));
+    operationQueue.notifyRobotInformation(PROTOCOL_VERSION, version);
 
     // Call the robot event handlers.
     processEvents(events);
@@ -927,6 +920,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
         case WAVELET_SELF_REMOVED:
           onWaveletSelfRemoved(WaveletSelfRemovedEvent.as(event));
           break;
+        case WAVELET_TAGS_CHANGED:
+          onWaveletTagsChanged(WaveletTagsChangedEvent.as(event));
+          break;
         case WAVELET_TITLE_CHANGED:
           onWaveletTitleChanged(WaveletTitleChangedEvent.as(event));
           break;
@@ -983,7 +979,7 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
    *
    * @return a hash of this robot, computed from it's capabilities.
    */
-  private String computeHash() {
+  protected String computeHash() {
     long version = 0l;
     for (Entry<String, Capability> entry : capabilityMap.entrySet()) {
       long hash = entry.getKey().hashCode();
@@ -1030,8 +1026,8 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
     if (consumerDataObj != null) {
       try {
         @SuppressWarnings("unchecked")
-        Map<String, String[]> parameterMap = request.getParameterMap();
-        validateOAuthRequest(request.getRequestURL().toString(), parameterMap,
+        Map<String, String[]> parameterMap = req.getParameterMap();
+        validateOAuthRequest(req.getRequestURL().toString(), parameterMap,
             json, consumerDataObj.getConsumerKey(), consumerDataObj.getConsumerSecret());
       } catch (NoSuchAlgorithmException e) {
         throw new IllegalArgumentException("Error validating OAuth request", e);
@@ -1069,6 +1065,7 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
           "AbstractRobot.submit().");
     }
 
+    opQueue.notifyRobotInformation(PROTOCOL_VERSION, version);
     String json = SERIALIZER_FOR_ACTIVE_API.toJson(opQueue.getPendingOperations(),
         new TypeToken<List<OperationRequest>>(){}.getType());
 
@@ -1299,6 +1296,11 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
   }
 
   @Override
+  public void onWaveletTagsChanged(WaveletTagsChangedEvent event) {
+    // No-op.
+  }
+
+  @Override
   public void onWaveletTitleChanged(WaveletTitleChangedEvent event) {
     // No-op.
   }
@@ -1312,4 +1314,9 @@ public abstract class AbstractRobot extends HttpServlet implements EventHandler 
    * @return the display name of the robot.
    */
   protected abstract String getRobotName();
+
+  /**
+   * @return the URL of the robot's profile page.
+   */
+  protected abstract String getRobotProfilePageUrl();
 }

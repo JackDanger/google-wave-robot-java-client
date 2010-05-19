@@ -146,6 +146,15 @@ public class Element extends BlipContent {
     return type == ElementType.IMAGE;
   }
 
+  /**
+   * Returns whether this element is an attachment.
+   *
+   * @return true if the element is an attachment, false otherwise.
+   */
+  public boolean isAttachment() {
+    return type == ElementType.ATTACHMENT;
+  }
+
   @Override
   public String toString() {
     return "{'type':'" + type + "','properties':" + properties + "}";

@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
 import com.google.wave.api.Annotation;
+import com.google.wave.api.Attachment;
 import com.google.wave.api.Element;
 import com.google.wave.api.JsonRpcResponse;
 import com.google.wave.api.NonJsonSerializable;
@@ -28,6 +29,9 @@ import com.google.wave.api.OperationRequest;
 import com.google.wave.api.Range;
 
 import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A factory to instantiate a {@link Gson} instance, with pre-registered type
@@ -35,7 +39,21 @@ import java.lang.reflect.Type;
  * as data transfer objects.
  */
 public class GsonFactory {
+  
+  /** Additional type adapters. */
+  private final Map<Type, Object> customTypeAdapters = new LinkedHashMap<Type, Object>();
 
+  /**
+   * Registers a custom type adapter.
+   * 
+   * @param type the type that will be handled by the given adapter.
+   * @param typeAdapter the adapter that performs the serialization and
+   *     deserialization.
+   */
+  public void registerTypeAdapter(Type type, Object typeAdapter) {
+    customTypeAdapters.put(type, typeAdapter);
+  }
+  
   /**
    * Creates a {@link Gson} instance, with additional type adapters for these
    * types:
@@ -66,16 +84,23 @@ public class GsonFactory {
    * @return an instance of {@link Gson} with pre-registered type adapters.
    */
   public Gson create(String opNamespace) {
-    return new GsonBuilder()
+    ElementGsonAdaptor elementGsonAdaptor = new ElementGsonAdaptor();
+    GsonBuilder builder = new GsonBuilder()
         .setExclusionStrategies(new NonSerializableExclusionStrategy())
         .registerTypeAdapter(EventMessageBundle.class, new EventMessageBundleGsonAdaptor())
         .registerTypeAdapter(OperationRequest.class, new OperationRequestGsonAdaptor(opNamespace))
-        .registerTypeAdapter(Element.class, new ElementGsonAdaptor())
+        .registerTypeAdapter(Element.class, elementGsonAdaptor)
+        .registerTypeAdapter(Attachment.class, elementGsonAdaptor)
         .registerTypeAdapter(JsonRpcResponse.class, new JsonRpcResponseGsonAdaptor())
         .registerTypeAdapter(Annotation.class, new AnnotationInstanceCreator())
-        .registerTypeAdapter(Range.class, new RangeInstanceCreator())
-        .serializeNulls()
-        .create();
+        .registerTypeAdapter(Range.class, new RangeInstanceCreator());
+    
+    // Register custom type adapters.
+    for (Entry<Type, Object> entry : customTypeAdapters.entrySet()) {
+      builder.registerTypeAdapter(entry.getKey(), entry.getValue());
+    }
+    
+    return builder.serializeNulls().create();
   }
 
   /**

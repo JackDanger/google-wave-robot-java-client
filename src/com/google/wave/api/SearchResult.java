@@ -31,13 +31,20 @@ public class SearchResult {
     private final String title;
     private final String snippet;
     private final String waveId;
+    private final long lastModified;
+    private final int unreadCount;
+    private final int blipCount;
     private final List<String> participants;
-    
-    public Digest(String title, String snippet, String waveId, List<String> participants) {
+
+    public Digest(String title, String snippet, String waveId, List<String> participants,
+                  long lastModified, int unreadCount, int blipCount) {
       this.title = title;
       this.snippet = snippet;
       this.waveId = waveId;
       this.participants = new ArrayList<String>(participants);
+      this.lastModified = lastModified;
+      this.unreadCount = unreadCount;
+      this.blipCount = blipCount;
     }
 
     public String getTitle() {
@@ -54,6 +61,18 @@ public class SearchResult {
 
     public List<String> getParticipants() {
       return participants;
+    }
+
+    public long getLastModified() {
+      return lastModified;
+    }
+
+    public int getUnreadCount() {
+      return unreadCount;
+    }
+
+    public int getBlipCount() {
+      return blipCount;
     }
   }
 

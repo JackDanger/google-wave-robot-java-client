@@ -17,21 +17,19 @@ package com.google.wave.api.impl;
 import junit.framework.TestCase;
 
 /**
- * Unit tests for {@link Tuple}.
- * 
- * @author mprasetya@google.com (Marcel Prasetya)
+ * Test cases for {@link Tuple}.
  */
-public class TupleTests extends TestCase {
-  
+public class TupleTest extends TestCase {
+
   private static final String BAR = "bar";
   private static final String FOO = "foo";
-  
+
   private Tuple<String> tuple = Tuple.of(FOO, BAR);
 
   public void testSize() {
     assertEquals(2, tuple.size());
   }
-  
+
   public void testGet() {
     assertEquals(FOO, tuple.get(0));
     assertEquals(BAR, tuple.get(1));
@@ -51,7 +49,7 @@ public class TupleTests extends TestCase {
       // Expected.
     }
   }
-  
+
   public void testEquals() {
     assertFalse(tuple.equals(null));
     assertFalse(tuple.equals(new String[] {FOO, BAR}));
@@ -60,7 +58,7 @@ public class TupleTests extends TestCase {
     assertTrue(tuple.equals(tuple));
     assertTrue(tuple.equals(Tuple.of(FOO, BAR)));
   }
-  
+
   public void testHashCode() {
     assertTrue(tuple.hashCode() == tuple.hashCode());
     assertTrue(tuple.hashCode() == Tuple.of(FOO, BAR).hashCode());

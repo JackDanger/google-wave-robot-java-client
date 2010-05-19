@@ -106,8 +106,10 @@ public class OperationRequestGsonAdaptor implements JsonSerializer<OperationRequ
 
     for (Entry<String, JsonElement> parameter : parameters.entrySet()) {
       ParamsProperty parameterType = ParamsProperty.fromKey(parameter.getKey());
-      Object object = ctx.deserialize(parameter.getValue(), parameterType.clazz());
-      request.addParameter(Parameter.of(parameterType, object));
+      if (parameterType != null) {
+        Object object = ctx.deserialize(parameter.getValue(), parameterType.clazz());
+        request.addParameter(Parameter.of(parameterType, object));
+      }
     }
 
     return request;

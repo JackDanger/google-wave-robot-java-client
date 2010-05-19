@@ -141,6 +141,13 @@ public interface EventHandler {
   void onWaveletSelfRemoved(WaveletSelfRemovedEvent event);
 
   /**
+   * Handler for {@link WaveletTagsChangedEvent}.
+   *
+   * @param event the tags changed event.
+   */
+  void onWaveletTagsChanged(WaveletTagsChangedEvent event);
+
+  /**
    * Handler for {@link WaveletTitleChangedEvent}.
    *
    * @param event the title changed event.

@@ -23,12 +23,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.wave.api.AbstractRobot.HttpFetcher;
 import com.google.wave.api.JsonRpcConstant.ParamsProperty;
+import com.google.wave.api.JsonRpcConstant.RequestProperty;
 import com.google.wave.api.OperationRequest.Parameter;
 import com.google.wave.api.event.BlipContributorsChangedEvent;
 import com.google.wave.api.event.BlipSubmittedEvent;
 import com.google.wave.api.event.DocumentChangedEvent;
+import com.google.wave.api.event.WaveletTagsChangedEvent;
 import com.google.wave.api.event.EventType;
 import com.google.wave.api.impl.EventMessageBundle;
 import com.google.wave.api.impl.GsonFactory;
@@ -56,6 +61,11 @@ import javax.servlet.http.HttpServletResponse;
  * Test cases for {@link AbstractRobot}.
  */
 public class AbstractRobotTest extends TestCase {
+
+  private static final String PROFILE_PATH = "/basepath/_wave/robot/profile";
+  private static final String CAPABILITIES_XML_PATH = "/basepath/_wave/capabilities.xml";
+  private static final String JSONRPC_PATH = "/basepath/_wave/robot/jsonrpc";
+  private static final String VERIFY_TOKEN_PATH = "/basepath/_wave/verify_token";
 
   private class MockRobot extends AbstractRobot {
 
@@ -144,7 +154,7 @@ public class AbstractRobotTest extends TestCase {
       }
     };
     MockWriter writer = new MockWriter();
-    robot.doGet(makeMockRequest("/_wave/capabilities.xml"), makeMockResponse(writer));
+    robot.doGet(makeMockRequest(CAPABILITIES_XML_PATH), makeMockResponse(writer));
     String capabilitiesXml = writer.getString();
 
     String expectedCapabilityTag =
@@ -171,7 +181,7 @@ public class AbstractRobotTest extends TestCase {
   public void testServiceProfileRequest() throws Exception {
     AbstractRobot robot = new MockRobot();
     MockWriter writer = new MockWriter();
-    robot.doGet(makeMockRequest("/_wave/robot/profile"), makeMockResponse(writer));
+    robot.doGet(makeMockRequest(PROFILE_PATH), makeMockResponse(writer));
     String profileJson = writer.getString();
 
     String expectedProfileJson =
@@ -185,12 +195,12 @@ public class AbstractRobotTest extends TestCase {
     robot.setupVerificationToken("vertoken", "sectoken");
 
     MockWriter writer = new MockWriter();
-    robot.doGet(makeMockRequest("/_wave/verify_token", "st", "sectoken"),
+    robot.doGet(makeMockRequest(VERIFY_TOKEN_PATH, "st", "sectoken"),
         makeMockResponse(writer));
     assertEquals("vertoken", writer.getString());
 
     HttpServletResponse response = makeMockResponse(new MockWriter());
-    robot.doGet(makeMockRequest("/_wave/verify_token"), response);
+    robot.doGet(makeMockRequest(VERIFY_TOKEN_PATH), response);
     verify(response).setStatus(HttpURLConnection.HTTP_UNAUTHORIZED);
   }
 
@@ -203,6 +213,11 @@ public class AbstractRobotTest extends TestCase {
       }
 
       @Override
+      public String getRobotProfilePageUrl() {
+        return "http://code.google.com/apis/wave/";
+      }
+
+      @Override
       public void onBlipSubmitted(BlipSubmittedEvent e) {
         calledEvents.add(e.getType());
       }
@@ -211,26 +226,54 @@ public class AbstractRobotTest extends TestCase {
       public void onDocumentChanged(DocumentChangedEvent e) {
         calledEvents.add(e.getType());
       }
+
+      @Override
+      public void onWaveletTagsChanged(WaveletTagsChangedEvent e) {
+        calledEvents.add(e.getType());
+      }
+
+      @Override
+      protected String computeHash() {
+        return "hash1";
+      }
     };
 
     WaveletData waveletData = new WaveletData("google.com!wave1", "google.com!conv+root", "blip1",
         Arrays.asList("foo@google.com"));
-    BlipSubmittedEvent event1 = new BlipSubmittedEvent(null, null, "foo@test.com", 123l, "blip1");
-    DocumentChangedEvent event2 = new DocumentChangedEvent(null, null, "foo@test.com", 123l, "blip1");
+    BlipSubmittedEvent event1 = new BlipSubmittedEvent(null, null, "foo@test.com", 1l, "blip1");
+    DocumentChangedEvent event2 = new DocumentChangedEvent(null, null, "foo@test.com", 1l, "blip1");
+    WaveletTagsChangedEvent event3 = new WaveletTagsChangedEvent(null, null, "foo@test.com", 1l,
+        "blip1");
 
     EventMessageBundle bundle = new EventMessageBundle("Foo", "http://gmodules.com/api/rpc");
     bundle.addEvent(event1);
     bundle.addEvent(event2);
+    bundle.addEvent(event3);
     bundle.setWaveletData(waveletData);
     String json = new GsonFactory().create().toJson(bundle);
 
+    MockWriter mockWriter = new MockWriter();
     robot.doPost(
-        makeMockRequest("/_wave/robot/jsonrpc", new BufferedReader(new StringReader(json))),
-        makeMockResponse(new MockWriter()));
+        makeMockRequest(JSONRPC_PATH, new BufferedReader(new StringReader(json))),
+        makeMockResponse(mockWriter));
 
-    assertEquals(2, calledEvents.size());
+    assertEquals(3, calledEvents.size());
     assertEquals(EventType.BLIP_SUBMITTED, calledEvents.get(0));
     assertEquals(EventType.DOCUMENT_CHANGED, calledEvents.get(1));
+    assertEquals(EventType.WAVELET_TAGS_CHANGED, calledEvents.get(2));
+
+    // Assert that the outgoing operation bundle contains robot.notify() op.
+    JsonParser jsonParser = new JsonParser();
+    JsonArray ops = jsonParser.parse(mockWriter.getString()).getAsJsonArray();
+    assertEquals(1, ops.size());
+
+    JsonObject op = ops.get(0).getAsJsonObject();
+    assertEquals(OperationType.ROBOT_NOTIFY_CAPABILITIES_HASH.method(),
+        op.get(RequestProperty.METHOD.key()).getAsString());
+
+    JsonObject params = op.get(RequestProperty.PARAMS.key()).getAsJsonObject();
+    assertEquals("0.21", params.get(ParamsProperty.PROTOCOL_VERSION.key()).getAsString());
+    assertEquals("hash1", params.get(ParamsProperty.CAPABILITIES_HASH.key()).getAsString());
   }
 
   public void testBlindWavelet() throws Exception {

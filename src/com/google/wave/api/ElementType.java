@@ -36,7 +36,8 @@ public enum ElementType {
   GADGET("GADGET"),
   INSTALLER("INSTALLER"),
   IMAGE("IMAGE"),
-  LINE("LINE");
+  LINE("LINE"),
+  ATTACHMENT("ATTACHMENT");
 
   private final String text;
 

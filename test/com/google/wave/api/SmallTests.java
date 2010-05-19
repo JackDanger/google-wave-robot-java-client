@@ -16,7 +16,9 @@
 package com.google.wave.api;
 
 import com.google.wave.api.event.EventSerializerTest;
-import com.google.wave.api.impl.TupleTests;
+import com.google.wave.api.impl.JsonRpcResponseGsonAdaptorTest;
+import com.google.wave.api.impl.OperationRequestGsonAdaptorTest;
+import com.google.wave.api.impl.TupleTest;
 import com.google.wave.api.oauth.impl.OAuthServiceImplTest;
 
 import junit.framework.Test;
@@ -49,7 +51,9 @@ public class SmallTests extends TestSuite {
     suite.addTestSuite(EventSerializerTest.class);
 
     // Add all small tests from com.google.wave.api.impl package.
-    suite.addTestSuite(TupleTests.class);
+    suite.addTestSuite(JsonRpcResponseGsonAdaptorTest.class);
+    suite.addTestSuite(OperationRequestGsonAdaptorTest.class);
+    suite.addTestSuite(TupleTest.class);
 
     // Add all small tests from com.google.wave.api.oauth.impl package.
     suite.addTestSuite(OAuthServiceImplTest.class);

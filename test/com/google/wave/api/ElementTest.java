@@ -58,6 +58,7 @@ public class ElementTest extends TestCase {
     assertFalse(new Element(ElementType.GADGET).isFormElement());
     assertFalse(new Element(ElementType.INLINE_BLIP).isFormElement());
     assertFalse(new Element(ElementType.IMAGE).isFormElement());
+    assertFalse(new Element(ElementType.ATTACHMENT).isFormElement());
   }
 
   public void testIsGadget() {
@@ -72,6 +73,7 @@ public class ElementTest extends TestCase {
     assertTrue(new Element(ElementType.GADGET).isGadget());
     assertFalse(new Element(ElementType.INLINE_BLIP).isGadget());
     assertFalse(new Element(ElementType.IMAGE).isGadget());
+    assertFalse(new Element(ElementType.ATTACHMENT).isGadget());
   }
 
   public void testIsInlineBlip() {
@@ -86,6 +88,7 @@ public class ElementTest extends TestCase {
     assertFalse(new Element(ElementType.GADGET).isInlineBlip());
     assertTrue(new Element(ElementType.INLINE_BLIP).isInlineBlip());
     assertFalse(new Element(ElementType.IMAGE).isInlineBlip());
+    assertFalse(new Element(ElementType.ATTACHMENT).isInlineBlip());
   }
 
   public void testIsImage() {
@@ -99,7 +102,23 @@ public class ElementTest extends TestCase {
     assertFalse(new Element(ElementType.TEXTAREA).isImage());
     assertFalse(new Element(ElementType.GADGET).isImage());
     assertFalse(new Element(ElementType.INLINE_BLIP).isImage());
+    assertFalse(new Element(ElementType.ATTACHMENT).isImage());
     assertTrue(new Element(ElementType.IMAGE).isImage());
+  }
+
+  public void testIsAttachment() {
+    assertFalse(new Element(ElementType.BUTTON).isAttachment());
+    assertFalse(new Element(ElementType.CHECK).isAttachment());
+    assertFalse(new Element(ElementType.INPUT).isAttachment());
+    assertFalse(new Element(ElementType.PASSWORD).isAttachment());
+    assertFalse(new Element(ElementType.LABEL).isAttachment());
+    assertFalse(new Element(ElementType.RADIO_BUTTON).isAttachment());
+    assertFalse(new Element(ElementType.RADIO_BUTTON_GROUP).isAttachment());
+    assertFalse(new Element(ElementType.TEXTAREA).isAttachment());
+    assertFalse(new Element(ElementType.GADGET).isAttachment());
+    assertFalse(new Element(ElementType.INLINE_BLIP).isAttachment());
+    assertFalse(new Element(ElementType.IMAGE).isAttachment());
+    assertTrue(new Element(ElementType.ATTACHMENT).isAttachment());
   }
 
   // Test for http://b/2133741 - ClassCastException in Element.getProperty().

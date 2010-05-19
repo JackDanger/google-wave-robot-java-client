@@ -54,26 +54,25 @@ public class JsonRpcResponseGsonAdaptor implements JsonDeserializer<JsonRpcRespo
       return JsonRpcResponse.error(id, errorMessage);
     }
 
-    JsonObject result = null;
-    // TODO(mprasetya): Do not wrap the data inside another JSON array.
-    JsonElement data = jsonObject.get(ResponseProperty.DATA.key());
-    if (data.isJsonArray()) {
-      result = data.getAsJsonArray().get(0).getAsJsonObject();
-    } else {
-      result = data.getAsJsonObject();
-    }
-
+    // Deserialize the data.
     Map<ParamsProperty, Object> properties = new HashMap<ParamsProperty, Object>();
-    for (Entry<String, JsonElement> parameter : result.entrySet()) {
-      ParamsProperty parameterType = ParamsProperty.fromKey(parameter.getKey());
-      Object object = null;
-      if (parameterType == ParamsProperty.BLIPS) {
-        Type blipMapType = new TypeToken<Map<String, BlipData>>(){}.getType();
-        object = context.deserialize(parameter.getValue(), blipMapType);
-      } else {
-        object = context.deserialize(parameter.getValue(), parameterType.clazz());
+    JsonElement data = jsonObject.get(ResponseProperty.DATA.key());
+    if (data != null && data.isJsonObject()) {
+      for (Entry<String, JsonElement> parameter : data.getAsJsonObject().entrySet()) {
+        ParamsProperty parameterType = ParamsProperty.fromKey(parameter.getKey());
+        if (parameterType == null) {
+          // Skip this unknown parameter.
+          continue;
+        }
+        Object object = null;
+        if (parameterType == ParamsProperty.BLIPS) {
+          Type blipMapType = new TypeToken<Map<String, BlipData>>(){}.getType();
+          object = context.deserialize(parameter.getValue(), blipMapType);
+        } else {
+          object = context.deserialize(parameter.getValue(), parameterType.clazz());
+        }
+        properties.put(parameterType, object);
       }
-      properties.put(parameterType, object);
     }
 
     return JsonRpcResponse.result(id, properties);

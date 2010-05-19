@@ -15,14 +15,17 @@
 
 package com.google.wave.api.impl;
 
+import org.apache.commons.codec.binary.Base64;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
+import com.google.wave.api.Attachment;
 import com.google.wave.api.Element;
 import com.google.wave.api.ElementType;
 import com.google.wave.api.FormElement;
@@ -42,8 +45,8 @@ import java.util.Map.Entry;
 public class ElementGsonAdaptor implements JsonDeserializer<Element>,
     JsonSerializer<Element> {
 
-  private static final String TYPE_TAG = "type";
-  private static final String PROPERTIES_TAG = "properties";
+  protected static final String TYPE_TAG = "type";
+  protected static final String PROPERTIES_TAG = "properties";
 
   @Override
   public Element deserialize(JsonElement json, Type typeOfT,
@@ -62,6 +65,13 @@ public class ElementGsonAdaptor implements JsonDeserializer<Element>,
       result = new Gadget(properties);
     } else if (type == ElementType.IMAGE) {
       result = new Image(properties);
+    } else if (type == ElementType.ATTACHMENT) {
+      byte[] data = null;
+      String encodedData = properties.get(Attachment.DATA);
+      if (encodedData != null) {
+        data = Base64.decodeBase64(encodedData);
+      }
+      result = new Attachment(properties, data);
     } else if (type == ElementType.LINE) {
       result = new Line(properties);
     } else {
@@ -74,8 +84,14 @@ public class ElementGsonAdaptor implements JsonDeserializer<Element>,
   public JsonElement serialize(Element src, Type typeOfSrc, JsonSerializationContext context) {
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty(TYPE_TAG, src.getType().toString());
-
     JsonObject properties = new JsonObject();
+    if (src.isAttachment()) {
+      Attachment attachment = (Attachment) src;
+      if (attachment.hasData()) {
+        String encodedData = Base64.encodeBase64String(attachment.getData());
+        properties.add(Attachment.DATA, new JsonPrimitive(encodedData));
+      }      
+    }
     for (Entry<String, String> entry : src.getProperties().entrySet()) {
       // Note: Gson's JsonObject and MapTypeAdapter don't escape the key
       // automatically, so we have to manually escape it here by calling

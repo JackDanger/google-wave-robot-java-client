@@ -74,11 +74,10 @@ public enum OperationType {
   ROBOT_FOLDER_ACTION("robot.folderAction"),
   ROBOT_CREATE_WAVELET("robot.createWavelet"),
   ROBOT_FETCH_WAVE("robot.fetchWave"),
-  ROBOT_NOTIFY_CAPABILITIES_HASH("robot.notifyCapabilitiesHash"),
+  ROBOT_NOTIFY("robot.notify"),
   ROBOT_SEARCH("robot.search"),
 
-  // TODO(mprasetya): Remove these deprecated operations once renaming is
-  // complete.
+  // Remove these deprecated operations once all robots are upgraded to v0.21.
   @Deprecated WAVELET_ADD_PARTICIPANT("wavelet.participant.add"),
   @Deprecated WAVELET_REMOVE_PARTICIPANT("wavelet.participant.remove"),
 
@@ -99,7 +98,9 @@ public enum OperationType {
 
   @Deprecated DOCUMENT_INLINE_BLIP_APPEND("document.inlineBlip.append"),
   @Deprecated DOCUMENT_INLINE_BLIP_INSERT("document.inlineBlip.insert"),
-  @Deprecated DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT("document.inlineBlip.insertAfterElement")
+  @Deprecated DOCUMENT_INLINE_BLIP_INSERT_AFTER_ELEMENT("document.inlineBlip.insertAfterElement"),
+
+  @Deprecated ROBOT_NOTIFY_CAPABILITIES_HASH("robot.notifyCapabilitiesHash")
   ;
 
   private static final Logger LOG = Logger.getLogger(OperationType.class.getName());
@@ -133,16 +134,16 @@ public enum OperationType {
 
   /**
    * Returns an {@link OperationType} enumeration that has the given method
-   * name. If no match is found, UNKOWN is returned.
+   * name. If no match is found, UNKNOWN is returned.
    *
    * @param methodName The method name of an operation.
    * @return An {@link OperationType} that has the given method name.
    */
   public static OperationType fromMethodName(String methodName) {
-    if (reverseLookupMap.containsKey(methodName)) {
-      return reverseLookupMap.get(methodName);
-    } else {
+    OperationType operationType = reverseLookupMap.get(methodName);
+    if (operationType == null) {
       return UNKNOWN;
     }
+    return operationType;
   }
 }

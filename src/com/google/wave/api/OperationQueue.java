@@ -387,8 +387,46 @@ public class OperationQueue {
    */
   OperationRequest appendOperation(OperationType opType, WaveId waveId, WaveletId waveletId,
       String blipId, Parameter... parameters) {
-    // TODO(mprasetya): Remove this check once we convert OperationRequest to
-    // use WaveId and WaveletId.
+    return addOperation(opType, waveId, waveletId, blipId, pendingOperations.size(), parameters);
+  }
+
+  /**
+   * Creates and prepends a new operation to the operation queue.
+   *
+   * @param opType the type of the operation.
+   * @param waveId the wave id in which the operation should be applied to.
+   * @param waveletId the wavelet id of the given wave in which the operation
+   *     should be applied to.
+   * @param blipId the optional blip id of the given wave in which the operation
+   *     should be applied to. Not all operations require blip id.
+   * @param parameters the parameters that should be added as a property of
+   *     the operation.
+   * @return an instance of {@link OperationRequest} that represents the queued
+   *     operation.
+   */
+  OperationRequest prependOperation(OperationType opType, WaveId waveId, WaveletId waveletId,
+      String blipId, Parameter... parameters) {
+    return addOperation(opType, waveId, waveletId, blipId, 0, parameters);
+  }
+
+  /**
+   * Creates and adds a new operation to the operation queue.
+   *
+   * @param opType the type of the operation.
+   * @param waveId the wave id in which the operation should be applied to.
+   * @param waveletId the wavelet id of the given wave in which the operation
+   *     should be applied to.
+   * @param blipId the optional blip id of the given wave in which the operation
+   *     should be applied to. Not all operations require blip id.
+   * @param index the index where this new operation should be added to in the
+   *     queue.
+   * @param parameters the parameters that should be added as a property of
+   *     the operation.
+   * @return an instance of {@link OperationRequest} that represents the queued
+   *     operation.
+   */
+  OperationRequest addOperation(OperationType opType, WaveId waveId, WaveletId waveletId,
+      String blipId, int index, Parameter... parameters) {
     String waveIdString = null;
     if (waveId != null) {
       waveIdString = waveId.serialise();
@@ -408,7 +446,7 @@ public class OperationQueue {
       operation.addParameter(Parameter.of(ParamsProperty.PROXYING_FOR, proxyForId));
     }
 
-    pendingOperations.add(operation);
+    pendingOperations.add(index, operation);
     return operation;
   }
 
@@ -493,5 +531,17 @@ public class OperationQueue {
     appendOperation(OperationType.WAVELET_MODIFY_PARTICIPANT_ROLE, wavelet,
         Parameter.of(ParamsProperty.PARTICIPANT_ID, participant),
         Parameter.of(ParamsProperty.PARTICIPANT_ROLE, role));
+  }
+
+  /**
+   * Notifies the robot information.
+   *
+   * @param protocolVersion the wire protocol version of the robot.
+   * @param capabilitiesHash the capabilities hash of the robot.
+   */
+  public void notifyRobotInformation(String protocolVersion, String capabilitiesHash) {
+    prependOperation(OperationType.ROBOT_NOTIFY_CAPABILITIES_HASH, null, null, null,
+        Parameter.of(ParamsProperty.PROTOCOL_VERSION, protocolVersion),
+        Parameter.of(ParamsProperty.CAPABILITIES_HASH, capabilitiesHash));
   }
 }

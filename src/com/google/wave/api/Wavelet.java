@@ -375,6 +375,11 @@ public class Wavelet {
    * done using the {@code proxyForId}, i.e. the
    * {@code robot+<proxyForId>@appspot.com} address will be used.
    *
+   * If the wavelet was retrieved using the Active Robot API, that is
+   * by {@code fetchWavelet}, then the address of the robot must be added to the
+   * wavelet by calling {@code setRobotAddress} with the robot's address
+   * before calling {@code proxy_for}.
+   *
    * @param proxyForId the id to proxy.
    * @return a shallow copy of this wavelet with the proxying information set.
    */
